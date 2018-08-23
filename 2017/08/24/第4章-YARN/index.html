@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.3.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.3.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.3.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.3.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Apache YARN(Yet Another Resource Negotiator)是一个Hadoop集群资源管理系统。YARN是在Hadoop 2引入的，用以改善MapReduce的表现。但是它也足够胜任其它的分布式计算框架。 YARN提供了一些能被请求调用的APIs，并处理集群资源。但是通常用户不会直接调用这些APIs，而是调用由分布计算框架提供的更高级别的APIs。这些更高级别的APIs">
+<meta name="keywords" content="yarn">
+<meta property="og:type" content="article">
+<meta property="og:title" content="第4章:YARN">
+<meta property="og:url" content="https://cool-coding.github.io/2017/08/24/第4章-YARN/index.html">
+<meta property="og:site_name" content="半亩方塘">
+<meta property="og:description" content="Apache YARN(Yet Another Resource Negotiator)是一个Hadoop集群资源管理系统。YARN是在Hadoop 2引入的，用以改善MapReduce的表现。但是它也足够胜任其它的分布式计算框架。 YARN提供了一些能被请求调用的APIs，并处理集群资源。但是通常用户不会直接调用这些APIs，而是调用由分布计算框架提供的更高级别的APIs。这些更高级别的APIs">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/6752673-923b09157bff0ad5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/6752673-c99ac2e6795cb6c8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/6752673-9d90aa7d0126ee3c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/6752673-6cf814576c195402.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/6752673-b247fff606869a2f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2018-05-24T10:31:42.793Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="第4章:YARN">
+<meta name="twitter:description" content="Apache YARN(Yet Another Resource Negotiator)是一个Hadoop集群资源管理系统。YARN是在Hadoop 2引入的，用以改善MapReduce的表现。但是它也足够胜任其它的分布式计算框架。 YARN提供了一些能被请求调用的APIs，并处理集群资源。但是通常用户不会直接调用这些APIs，而是调用由分布计算框架提供的更高级别的APIs。这些更高级别的APIs">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/6752673-923b09157bff0ad5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+
+
+
+  <link rel="canonical" href="https://cool-coding.github.io/2017/08/24/第4章-YARN/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>第4章:YARN | 半亩方塘</title>
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-119765145-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-119765145-1');
+</script>
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">半亩方塘</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <h1 class="site-subtitle" itemprop="description">Stay foolish,Stay hungry</h1>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://cool-coding.github.io/2017/08/24/第4章-YARN/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Mr.Yang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="半亩方塘">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">第4章:YARN
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-08-24 22:23:15" itemprop="dateCreated datePublished" datetime="2017-08-24T22:23:15+08:00">2017-08-24</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/hadoop/" itemprop="url" rel="index"><span itemprop="name">hadoop</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/08/24/第4章-YARN/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2017/08/24/第4章-YARN/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2017/08/24/第4章-YARN/" class="leancloud_visitors" data-flag-title="第4章:YARN">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Apache YARN(Yet Another Resource Negotiator)是一个Hadoop集群资源管理系统。YARN是在Hadoop 2引入的，用以改善MapReduce的表现。但是它也足够胜任其它的分布式计算框架。</p>
+<p>YARN提供了一些能被请求调用的APIs，并处理集群资源。但是通常用户不会直接调用这些APIs，而是调用由分布计算框架提供的更高级别的APIs。这些更高级别的APIs基于YARN建立，并对用户隐藏了资源管理的细节。图4-1说明了这个情景，并显示了一些分布式计算框架(MapReduce,Spark等等)作为YARN应用位于集群计算层(YARN)和存储层之上(HDFS和Hbase)。<br><img src="http://upload-images.jianshu.io/upload_images/6752673-923b09157bff0ad5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="图4-1:YARN应用"><br>图4-1框架表示的应用层之上还有一层应用，如Pig,Hive和Crunch。它们都运行在MapReduce,Spark或Tez(或同时三者)之上，并不和YARN直接交互。</p>
+<p>这一章节带领大家过一遍YARN的特性，为理解第四部分章节的内容(包括一些分布式处理框架)打下基础。<br><a id="more"></a></p>
+<h2 id="YARN应用运行分析"><a href="#YARN应用运行分析" class="headerlink" title="YARN应用运行分析"></a>YARN应用运行分析</h2><p>YARN通过两种一直运行的守护进程来提供它的核心服务。一种是资源管理器(一个集群一个),管理集群中所有资源的使用，另一种是节点管理器，在所有节点上运行，启动或监控容器。容器会使用分配的有限资源的集合(内存，CPU等)执行应用特定的进程。取决于YARN是如何配置的，容器可以是一个Unix进程，也可以是一个Linux cgroup(control groups)。图4-2显示了YARN怎么样运行应用的。<br><img src="http://upload-images.jianshu.io/upload_images/6752673-c99ac2e6795cb6c8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="图4-2:YARN怎么样运行应用"></p>
+<p>为了运行基于YARN的应用，客户端必须与资源管理器(resource manager)通信，请求它运行一个应用主进程(图4-2步骤1)。资源管理器然后寻找能够在容器中启动这个应用主进程的节点管理器(步骤2a和2b)。应用启动后，具体能够做什么取决于应用本身。它可以在它所在的容器中简单地执行一个计算然后将结果返回给客户端。或者它可以向资源管理器请求更多的容器(步骤3)，以便运行分布式计算(步骤4a和4b)。后者是MapReduce YARN应用所做的事，我们将会在”一个MapRedue作业运行分析”小节中详细地学习。</p>
+<p>从图4-2我们注意到，YARN本身不提供任何方法让应用各部分(客户端，主进程，进程)间进行通信。大多数特殊的YARN应用使用远程调用的形式(例如Hadoop的RPC)，将更新的状态和结果传递回客户端，但是这不是正常情况。</p>
+<h3 id="资源请求"><a href="#资源请求" class="headerlink" title="资源请求"></a>资源请求</h3><p>YARN对于资源请求的形式要求比较灵活。某个请求，请求多个容器，可以对每一个容器都指定需要的计算机硬件资源(内存，CPU等)，并能够指定位置限定的一些容器。</p>
+<p>位置对于一些分布式的数据处理算法能够充分高效地使用集群带宽是很重要的。所以YARN允许应用指定它请求的容器的位置。位置限定可以指定位于某个特定的节点或机架，或者集群中任意位置(比如:不在机架上的)的容器。</p>
+<p>有时，并不能够满足位置限定的条件，这种情况下，要未不分配任何位置，要未，选择放宽限定条件。例如，指定了某个节点，但是不可能在这个节点上启动容器(因为其它容器正在它上面运行)，那么YARN将会尝试启动位于相同机架上的其它节点上的容器，或者其它节点也不可用时，就启动集群中任意一个节点上的容器。</p>
+<p>启动一个容器处理HDFS块(比方说，执行MapReduce中的一个map任务)，通常情况下，应用会请求保存了块三个复本的那个节点，或者保存了这些复本的机架中的某个节点，如果以上都失败了，就选择集群中任意一个节点上的容器。</p>
+<p>一个YARN容器可以在它运行时的任意时间发起资源请求。例如，一个应用可以预先发起所需所有资源的请求，也可以以一种更加动态的途径，即当应用有更改时，再动态地请求更多资源。</p>
+<p>Spark采取了第一种途径，在集群中启动固定数量的执行器(“参看在YARN上的Spark ”章节)。另一方面，MapReduce会采取这两种途径。执行map任务时会预先请求所有容器，执行reduce任务的容器不会立即启动，会在后面启动。而且，如果有任何任务处理失败了，将会请求额外的容器重新执行失败的任务。</p>
+<h3 id="应用的生命周期"><a href="#应用的生命周期" class="headerlink" title="应用的生命周期"></a>应用的生命周期</h3><p>一个YARN应用的生命周期可以千差万别，从几秒的短命应用到可以运行数天甚至数月的长期应用。可行的应用归类是根据应用与作业之间的映射关系而不是应用运行的时间来进行分类。最简单的情况是每一个作业对应一个应用，MapReduce任务采取的就是这个途径。</p>
+<p>第二个模式是每一个工作流运行一个应用或多个作业(可能是不相关的作业)运行一个应用。这种途径比第一个途径更高效，因为应用容器可以被多个作业共用，也可以缓存多个作业产生的中间数据。Spark就是一个使用这种模式的例子。</p>
+<p>第三个模式是被不同用户共享的长生命周期应用。这种应用经常是以某种配合的角色发挥作用。例如Apache Slider就有一个长期运行的应用管理器，这个应用管理器作用是启动集群中的其它应用。Impala通过这个途径来提供一个代理应用，用于响应Impala实体机的资源请求。通过使用这种”一直运行”的应用管理器，用户可以获得低延迟响应，因为当用户查询时不需要启动一个新的应用管理器了。</p>
+<h3 id="构建YARN应用"><a href="#构建YARN应用" class="headerlink" title="构建YARN应用"></a>构建YARN应用</h3><p>从头开始写一个YARN应用是相当复杂地，但是大多数情况不必要。因为可以使用一个已经存在的应用，进行调整以适应自己地需求。例如，如果你对有向无环图(DAG)感兴趣，那么Spark或者Tez是合适的，或者对流式处理感兴趣，Spark，Samza或者Storm是合适的。</p>
+<p>有很多工程用于简化构建一个YARN应用时的操作。早先提到的Apache Slider让现有的分布式应用运行在YARN上成为可能。用户可以在集群上运行他们自己的应用(例如HBase)而不影响其它用户，不同的用户可以运行同一个应用不同的版本。Slider能够改变应用运行的节点数量，挂起和恢复运行某个应用。</p>
+<p>Apache Twill与Slider相似，但除了以上功能，另外还可以提供一个简单的编程模型，可以开发基于YARN的分布式应用。Twill允许你定义实现了Java Runnable接口的集群进程，然后在集群的YARN容器中运行它们。Twill还提供实时日志(记录可执行进程的事件以流形式返回客户端)和命令消息(将客户端的命令发送给可执行进程)。</p>
+<p>当以上选择都不能满足要求时，例如需要开发一个能够进行复杂时间调度的YARN应用。那么YARN工程中有一个分布式的shell应用可以做为如何开发YARN应用的例子，它演示了如何使用YARN APIs在客户端、应用管理器与YARN守护进程之间交互通信。</p>
+<h2 id="YARN与MapReduce-1比较"><a href="#YARN与MapReduce-1比较" class="headerlink" title="YARN与MapReduce 1比较"></a>YARN与MapReduce 1比较</h2><p>在Hadoop最初版本(版本1或更早)中的MapReduce有时被称为”MapReduce 1”，以和MapReduce 2区分开。MapReduce 2是Hadoop 2或之后的版本，它使用了YARN。</p>
+<blockquote>
+<p>有一件重要的事情，那就是旧的和新的MapReduce APIs与MapReduce1和MapReduce2并不是一回事。APIs是面向用户，客户端的，决定了你如何写MapReduce程序(参看附录D)，然而MapReduce1和2仅仅是运行MapReduce程序不同的方法。旧的和新的MapReduce APIs都可以在MapReduce1和2中运行。</p>
+</blockquote>
+<p>在MapReduce1中，有两种控制作业执行过程的守护进程，一种是jobtracker，一种是一个或多个tasktracker。jobtracker组合系统中需要运行的所有作业，然后分配运行在tasktracker上的任务。Tasktracker执行任务，并将进度报告发送给jobtracker，jobtracker将会保存每一个作业的整个进度。如果一个任务失败了，jobtracker将会在另一个tasktracker上启动它。</p>
+<p>在MapReduce1中，jobtracker既关心作业的调度(匹配tasktracker与task)，又关心任务的进度(跟踪任务，重启失败的任务，显示任务，记录任务，例如维护任务数)。相对地，在YARN中，这些责任由不同的实体处理：资源管理器和应用管理器(一个MapReduce作业一个应用管理器)。jobtracker还需要存储已经完成的作业的历史记录。当然也可以单独运行一个历史记录服务来给jobtracker减负。在YARN中，具有相同角色的是时间线服务，它存储应用的历史记录。</p>
+<p>在YARN应用中，与tasktracker等效的是节点管理器。MapReduce1与YARN的功能映射关系如表4-1所示:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">MapReduce 1</th>
+<th style="text-align:left">YARN</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Jobtracker</td>
+<td style="text-align:left">资源管理器，应用管理器，时间线服务</td>
+</tr>
+<tr>
+<td style="text-align:left">Tasktracker</td>
+<td style="text-align:left">节点管理器</td>
+</tr>
+<tr>
+<td style="text-align:left">槽(Slot)</td>
+<td style="text-align:left">容器</td>
+</tr>
+</tbody>
+</table>
+<p>设计YARN的目的是解决MapReduce 1的一些局限性。使用YARN有如下好处：</p>
+<ul>
+<li>扩展性<br> YARN可以运行在比MapReduce 1更大的集群上。当达到4000节点或4000个任务时，MapReduce 1就达到了瓶颈。因为jobtracker必须要管理作业和任务。YARN通过使用分开的资源管理与应用管理的结构克服了这个限制，YARN设计的目的是能扩展到10000个节点和100000个任务。</li>
+<li>高可用性<br> HA(High availability 高可用)是当正在服务的实体机故障时，通过复制所需的状态和数据到另外一台实体机上，执行所需的工作，继续提供服务来实现的。然而jobtracker内存中大量快速地改变复杂的状态(例如，每几秒钟每一个task状态就会更新一次)使HA应用到jobtracker变得非常困难。<br> YARN通过将jobtracker的功能分解到资源管理器和应用管理器，使服务高度可用变成了一个可以分开克服的问题。那就是为资源管理器提供HA，然后为YARN应用(以每一个应用为基础单位)提供HA。实际小，Hadoop 2支持MapReduce作业中的资源 管理器和应用管理器HA。YARN中的故障恢复将在第7章”故障”小节中详细讲解。</li>
+<li>实用性<br> 在MapReduce 1中，每个tasktracker通过一个位置固定，大小固定的”槽”中配置，槽分为map槽和reduce槽。map槽只能用于运行map任务，相应的，reduce槽只能用于reduce任务。<br> 在YARN中，一个节点管理器管理一个资源池，而不是数量固定的指定的槽。YARN上的运行的MapReduce不会出现由于集群中仅仅有map槽，reduce任务必须等待的情况。这种情况可能发生在MapReduce 1中.YARN中，如果运行任务时，资源可得，那么应用就应该能够使用它们。<br> 而且，YARN中的资源是精细化管理的，所以应用可以请求它所需要的资源，而不必请求一个槽。对于某些特殊的任务来说，槽太大的话，会造成资源浪费，太小的话，造成任务失败。</li>
+<li><p>多用性<br>从某些方面来说，YARN最大的优势是它使Hadoop能够使用除了MapReduce其它类型的分布式应用。MapReduce仅仅是其中一个YARN应用。</p>
+<p>用户甚至能够在同一个集群中运行不同版本的MapReduce应用。这就使得升级MapReduce变得更加容易管理。(注意，MapReduce中的某些部分，例如作业历史记录服务器，shuffle处理器和YARN本身仍然需要整个集群一起升级。)</p>
+</li>
+</ul>
+<p>既然Hadoop 2被广泛使用，而且是最新的稳定版本。这本书中剩余部分内容中”MapReduce”指的就是”MapReduce 2”。第7章将会详细地讲解MapReduce如何运行在YARN之上。</p>
+<h2 id="YARN中的调度计划"><a href="#YARN中的调度计划" class="headerlink" title="YARN中的调度计划"></a>YARN中的调度计划</h2><p>理想情况下，一个YARN应用的请求应该立刻响应。然而，现实情况是，资源是有限的，而且集群繁忙时，应用经常需要等待直到它的部分请求得到满足。YARN调度器的工作就是根据一些既定的规则给应用分配资源。调度通常是一个困难的问题，没有一个最好的规则。这也就是为什么YARN提供调度器和可配置规则两种选择的原因。我们接下来详细看看。</p>
+<h3 id="调度器"><a href="#调度器" class="headerlink" title="调度器"></a>调度器</h3><p>YARN中有三种调度器：FIFO调度器，容量调度器和公平调度器。FIFO调度器将应用放在一个队列中，按照它们提交的顺序运行它们(先进，先出)。队列中第一个应用的请求首先满足。一旦它的请求被满足了之后，就服务队列中下一个应用，依次类推。</p>
+<p>FIFO的优点是容易理解，而且不需要配置。但是它不适合资源共享的集群。一般大的应用会用到集群中所有资源，如果使用FIFO，每一个应用必须要按序等待。在资源共享的集群中，最好使用容量调度器或者公平调度器。二者都会使那些运行时间长的作业能够在合理时间内完成，而且也使得用户在执行少量的临时的并发查询时，能够在合理的时间内返回结果。</p>
+<p>调度器之间的区别如图4-3所示，我们可以看到，FIFO调度模式(i)下，小的作业必须要等待大的作业完成之后才能执行。</p>
+<p>在容量调度模式(ii)下,一个分开的专用的队列允许小的作业一提交就能够执行。这是以整个集群的可利用空间为代价的，因为需要为这个专用队列预留空间。这也意味着大的作业比使用FIFO调度完成的晚。</p>
+<p>在公平调度模式(iii)下，不需要预留一定数量的空间。因为它会动态的平衡所有运行的作业所需的空间资源。第一个(大)作业启动后(目前是集群中唯一运行的作业)，它会获取集群中所有的资源，当第二个(小)作业启动后，它将把一半资源分配给第二个作业。这样，每一个作业都能分到相同数量的资源。</p>
+<p>注意到，第二个作业启动到它接收到所分的资源有一定的延迟。因为必须等待资源从第一个作业使用的容器中释放出来后才能使用。在小作业完成，并不再请求资源后，大的作业又将使用集群中所有的资源。这个模式造成集群的高占用空间和小作业及时的完成。</p>
+<p>图4-3对比了这三个调试器基本操作。接下来的两部分，我们将学习容量和公平调度器中一些高级的配置。</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/6752673-9d90aa7d0126ee3c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="图4-3:分别在FIFO(i)，容量(ii)，公平调度(iii)模式下运行一个大作业和一个小作业的集群空间使用量"></p>
+<h3 id="容量调度器配置"><a href="#容量调度器配置" class="headerlink" title="容量调度器配置"></a>容量调度器配置</h3><p>容量调度器允许按照组织的行形式共享Hadoop集群资源，每一个组织都分配了总集群资源中的一部分资源。每一个组织都设一个专用的队列。可以配置队列使用集群中指定的部分资源。队列也许可以进一步按层级划分，使得每一个组织可以将它的资源分配给不同组的用户。在队列中，应用按照FIFO规则进行调度。</p>
+<p>正如我们在图4-3看到的那样，单个作业不能使用超过它所在队列容量的资源。然而，如果队列中的作业超过一个，并且有空闲的资源，那么容量调度器也许会将剩余的资源分配给这个队列中的作业，即使会超出队列的容量(应分配的资源)[^1]，这就是所熟知的”弹性队列”。</p>
+<p>正常操作时，容量调度器不会强制地杀死作业来回收容器[^2]，所以如果一个队列由于缺少请求而容量不够，然后增加请求，如果其它队列中作业完成，有资源从容器中释放出来，队列将会占用其它队列的资源。通过配置队列的最大容量可以限制队列不占用其它队列太多资源。但这是以队列的弹性为代价，当然，通过不断尝试与错误，应该能找到一个合理的平衡点。</p>
+<p>假设队列层级如下面这样:<br><img src="http://upload-images.jianshu.io/upload_images/6752673-6cf814576c195402.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
+<p>示例4-1显示了一个容量调度器配置文件，这个配置文件叫做capacity-scheduler.xml。对应于上面的层级，在root队列下定义了两个队列，prod,dev，分别占40%和60%的资源。注意，可以通过属性yarn.scheduler.capacity.<queue-path>.<sub-property> 来配置队列特殊的属性。<queue-path>是队列的层级路径(以点分隔)，例如root.prod。<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">示例:<span class="number">4</span>-<span class="number">1</span>:容量调度器的基本配置文件</span><br><span class="line">&lt;?xml version=<span class="string">"1.0"</span>?&gt;</span><br><span class="line">&lt;configuration&gt;</span><br><span class="line">  &lt;property&gt;</span><br><span class="line">    &lt;name&gt;yarn.scheduler.capacity.root.queues&lt;/name&gt;</span><br><span class="line">    &lt;value&gt;prod,dev&lt;/value&gt;</span><br><span class="line"> &lt;/property&gt;</span><br><span class="line"> &lt;property&gt;</span><br><span class="line">   &lt;name&gt;yarn.scheduler.capacity.root.dev.queues&lt;/name&gt;</span><br><span class="line">   &lt;value&gt;eng,science&lt;/value&gt;</span><br><span class="line">&lt;/property&gt;</span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;yarn.scheduler.capacity.root.prod.capacity&lt;/name&gt;</span><br><span class="line">    &lt;value&gt;40&lt;/value&gt;</span><br><span class="line">&lt;/property&gt;</span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;yarn.scheduler.capacity.root.dev.capacity&lt;/name&gt;</span><br><span class="line">    &lt;value&gt;60&lt;/value&gt; </span><br><span class="line"> &lt;/property&gt;</span><br><span class="line"> &lt;property&gt;</span><br><span class="line">    &lt;name&gt;yarn.scheduler.capacity.root.dev.maximum-capacity&lt;/name&gt;</span><br><span class="line">    &lt;value&gt;75&lt;/value&gt;</span><br><span class="line"> &lt;/property&gt;</span><br><span class="line"> &lt;property&gt;</span><br><span class="line">     &lt;name&gt;yarn.scheduler.capacity.root.dev.eng.capacity&lt;/name&gt;</span><br><span class="line">     &lt;value&gt;50&lt;/value&gt;</span><br><span class="line"> &lt;/property&gt;</span><br><span class="line"> &lt;property&gt;</span><br><span class="line">   &lt;name&gt;yarn.scheduler.capacity.root.dev.science.capacity&lt;/name&gt;</span><br><span class="line">    &lt;value&gt;50&lt;/value&gt;</span><br><span class="line"> &lt;/property&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure></queue-path></sub-property></queue-path></p>
+<p>正如你看到的那样，dev队列进一步分成了相同大小的eng和science队列。所以当prod队列空闲的时候，dev队列没有使用集群所有的资源，它最大的使用资源设置为75%。换句话说，prod队列总是有25%资源可以立即使用。因为其它队列没有设置最大资源，eng或者science队列中的作业可以使用dev队列所有的资源(最多占集群的75%)，或者对于prod队列来说，实际可使用集群所有资源。</p>
+<p>除了配置队列的层级以及容量，还可以控制一个用户或应用可以分配的资源最大数量，同时可以运行的应用数，队列的ACLs控制(权限控制)。详细说明请参考<a href="http://bit.ly/capacity_scheduler" target="_blank" rel="noopener">Hadoop: Capacity Scheduler</a>。</p>
+<p><strong>队列指定</strong><br>指定应用放在哪个队列是在应用端进行指定的。例如，在MapReduce<br>中，你将属性mapreduce.job.queue.name的值设置为你想存放的队列的名字。如果指定的队列名不存在，将会在提交作业时报出错误。如果没有指定队列，则应用会放在叫做default的队列中。</p>
+<blockquote>
+<p>对于容量调度器而言，队列名称是层级结构最后一级的名字，全路径名称将不识别。所以，拿先前的配置例子来讲，prod和eng这样写没问题，但root.dev.eng和dev.eng就不行。</p>
+</blockquote>
+<h2 id="公平调度器的配置"><a href="#公平调度器的配置" class="headerlink" title="公平调度器的配置"></a>公平调度器的配置</h2><p>公平调度器试着使所有正运行的应用得到相同的资源。图4-3显示了在同一个队列中应用是怎么样平均分配资源的。然而，对于多个队列，仍然可以平均分配，下面将加以说明。</p>
+<blockquote>
+<p>在公平调度器上下文中，队列和池可以互换使用，意思是一样的</p>
+</blockquote>
+<p>为了理解资源是如何在队列间平分的，假设有两个用户A和B，每一个用户都有自己的队列(图4-4)。A用户启动了一个作业，由于B没有请求资源，这个作业将得到集群所有的资源。然后，B也启动了一个作业，A的作业仍然在运行，一会之后，每一个作业都能得到一半的资源，就像我们先前看到的那样。现在，如果B启动了第二个作业，这时其它作业仍在运行。B将把它的资源分配给他启动的其它作业，这样，B的每一个作业都将占有四分之一的资源。A仍然占有二分之一的资源。这样资源在用户之间平均分配了。<img src="http://upload-images.jianshu.io/upload_images/6752673-b247fff606869a2f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="图4-4:用户队列间的资源分配"></p>
+<p><strong>启用公平调度器</strong><br>使用哪个调度器是通过yarn.resourcemanager.scheduler.class属性决定的。默认是容量调度器(在有些hadoop分布式系统，例如CDH中，默认是使用公平调度器)。通过在yarn-site.xml配置文件中配置yarn.resourcemanager.scheduler.class来改变默认的调度器，它的值是调度器的全路径类名:org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler。</p>
+<p><strong>队列配置</strong><br>公平调度器在一个叫做fair-scheduler.xml的配置文件中配置，这个配置文件在加载classpath指定的类时一同被加载，配置文件的名字可以通过属性yarn.scheduler.fair.allocation.file设置。每一个应用被放在以用户名命名的队列中，当用户提交第一个应用时，队列就会被动态地创建。</p>
+<p>在配置文件中，配置每一个队列，可以像容量调度器一样按照层级进行配置。例如，我们可以按照我们在容量调度器中定义的那样定义prod和dev队列，如示例4-2。<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">示例<span class="number">4</span>-<span class="number">2</span>:公平调度器的配置文件</span><br><span class="line">&lt;?xml version=<span class="string">"1.0"</span>?&gt;</span><br><span class="line">&lt;allocations&gt;</span><br><span class="line">   &lt;defaultQueueSchedulingPolicy&gt;fair&lt;/defaultQueueSchedulingPolicy&gt;</span><br><span class="line">&lt;queue name=<span class="string">"prod"</span>&gt;</span><br><span class="line">  &lt;weight&gt;40&lt;/weight&gt;</span><br><span class="line">  &lt;schedulingPolicy&gt;fifo&lt;/schedulingPolicy&gt;</span><br><span class="line">&lt;/queue&gt;</span><br><span class="line">&lt;queue name=<span class="string">"dev"</span>&gt;</span><br><span class="line">   &lt;weight&gt;60&lt;/weight&gt;</span><br><span class="line">   &lt;queue name=<span class="string">"eng"</span> /&gt;</span><br><span class="line">   &lt;queue name=<span class="string">"science"</span> /&gt;</span><br><span class="line">&lt;/queue&gt;</span><br><span class="line">&lt;queuePlacementPolicy&gt;</span><br><span class="line">   &lt;rule name=<span class="string">"specified"</span> create=<span class="string">"false"</span> /&gt;</span><br><span class="line">   &lt;rule name=<span class="string">"primaryGroup"</span> create=<span class="string">"false"</span> /&gt;</span><br><span class="line">    &lt;rule name=<span class="string">"default"</span> queue=<span class="string">"dev.eng"</span> /&gt;</span><br><span class="line">&lt;/queuePlacementPolicy&gt;</span><br><span class="line">&lt;/allocations&gt;</span><br></pre></td></tr></table></figure></p>
+<p>队列的层级定义通过使用嵌套的queue节点。所有的队列是root队列的子队列，即使实现上没有嵌套在root队列节点下。这里，我们又将dev队列分成eng和science两个子队列。</p>
+<p>队列可以有重量，用于公平分享资源时的计算。在这个例子中，集群将prod和dev队列按照40:60的比例分配资源，这样分配是公平的。eng和science没有指定重量，所以它们是平均分配的。重量和比例不完全一样，这个示例中，我们使用加起来等于100的重量只是为了简便起见。我们也能给prod和dev队列的重量都指定2或3.</p>
+<blockquote>
+<p>当设置重量的时候，记得考虑到”默认队列”和动态生成的队列(例如那些以客户命名的队列)。没有在配置文件中指定的队列，重量都是1。</p>
+</blockquote>
+<p>这些队列可以有不同的调度规则。默认的规则可以通过顶级节点defaultQueueSchedulingPolicy设置。如果省略了这个节点，将使用公平调度规则。不能只看它的名字是“公平”，公平调度器也支持FIFO(fifo)规则和后面将讲到的优势资源公平规则(drf Dominant Resource Fairness)。</p>
+<p>某个特定队列的调度规则可以通过它的schedulingPolicy属性覆盖。如上面的配置文件，prod队列使用FIFO调度规则，因为我们想要每一个作业按顺序执行并且能在最短的时间内执行完。注意一点的是，prod和dev队列仍然使用公平调度规则进行资源的划分，eng和science队列也是一样。</p>
+<p>虽然没有在以上配置文件中显示出来，但还可以配置队列能使用的最小或最大资源空间，和队列中最多运行的应用数(详细配置参看<a href="http://bit.ly/fair_scheduler" target="_blank" rel="noopener">此页</a>)。最小资源空间不是一个硬性限制，而是调度器用来优先分配资源的。例如如果两个队列的资源都不够，那么离最小资源分配要求差距最大的将优先分配到资源。最小资源的设置还可用于优先占有，稍后将讨论到。</p>
+<p><strong>队列指定</strong><br>公平调度器使用一定的规则来决定应用放在哪个队列中。如示例4-2，queuePlacementPolicy节点包含一系列规则，系统将按顺序尝试每一条规则，直到匹配到一条。第一条规则，specified指定应用放在哪一个队列中，如果没有指定或指定的队列不存在，这条规则不符合，将尝试下一条规则。primaryGroup规则指定应用放在与用户的主Unix组名相同的队列中。如果不存在这样的队列，则尝试下一条规则。default规则是上面的规则都不满足时，系统总是会尝试的规则，此条规则将应用放在dev.eng队列中。</p>
+<p>queuePlacementPolicy节点整个可以省略不配置。如果是这样的话，就跟指定了下面的配置是一样的。<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;queuePlacementPolicy&gt;</span><br><span class="line">  &lt;rule name=<span class="string">"specified"</span> /&gt;</span><br><span class="line">  &lt;rule name=<span class="string">"user"</span> /&gt;</span><br><span class="line">&lt;/queuePlacementPolicy&gt;</span><br></pre></td></tr></table></figure></p>
+<p>换句话说，除非队列显示地声明，否则将寻找与用户的名字相同的队列，如果有必要，会创建与用户的名称一样的队列。</p>
+<p>另一个简单的队列指定规则是所有应用指定放于相同(默认)队列中。这样，每个应用都会分到相等的资源，而不是按照用户。对应的规则如下:<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;queuePlacementPolicy&gt;</span><br><span class="line">   &lt;rule name=<span class="string">"default"</span> /&gt;</span><br><span class="line">&lt;/queuePlacementPolicy&gt;</span><br></pre></td></tr></table></figure></p>
+<p>也可以不使用配置文件来设置规则，那就是将属性yarn.scheduler.fair.user-as-default-queue设置为false，这样应用就会都进入默认队列中，而不是按照用户分的队列中。另外，yarn.scheduler.fair.allow-undeclared-pools应该设置为false，<strong>这样用户就不能够在运行时动态创建队列了</strong>。</p>
+<p><strong>优先占有</strong><br>当一个作业提交到一台繁忙的集群中的一个空队列中时，这个作业不会立即启动，直到资源从正在运行在这个集群中的其它作业释放出来后才会启动。为了使一个作业启动的时间是可预料的，公平调度器允许优先占有。</p>
+<p>优先占有意思是调度器可以释放那些占用的资源超过它们应分配资源的队列正在使用的容器，然后分配给那些不够它们本应该分配的资源的队列。注意优先占有会降低整个集群的效率，因为容器终止后，容器之前运行的任务需要重新执行。</p>
+<p>如果将属性yarn.scheduler.fair.preemption设置为true，则会启用整个集群的优先占有。有两个相关的优先占有超时设置。一个针对最小资源的，一个针对公平分配资源的，都是以秒为单位。默认情况下，不会设置超时，所以你需要至少设置一个，以便让可以占有容器。</p>
+<p>如果队列等到了超时的时间还没到分到保证的最少资源。那么调度器也许会占其它的容器。通过在配置文件设置顶级属性defaultMinSharePreemptionTimeout,可以对所有队列设置超时的时间。如果想单独对某个队列设置，可以在队列节点中设置minSharePreemptionTimeout。</p>
+<p>同样地，如果一个队列占的资源不到它应得资源的50%，这种状态持续的时间达到了设置的公平分配的超时时间，那么调度器也会去占其它容器。通过在配置文件设置顶级属性defaultFairSharePreemptionTimeout，可以对所有队列设置超时的时间。如果想单独对某个队列设置，可以在队列节点中设置fairSharePreemptionTimeout。队列现占用的资源与应得资源的占比默认是0.5，我们可以通过配置属性defaultFairSharePreemptionThreshold和fairSharePreemptionThreshold(此属性针对单个队列)改变。</p>
+<h3 id="延迟调度"><a href="#延迟调度" class="headerlink" title="延迟调度"></a>延迟调度</h3><p>所有的YARN调度器尽量在请求的位置上执行应用。在一个繁忙的集群中，如果应用请求某个节点，此时，正好其它容器正在这个节点上运行。那么系统就不会严格按照请求来了，它会在相同的机架上再找另外一个容器。然而，实际上，如果等待一点时间(不超过几秒)就会增加能分配到请求节点上容器的机率，因此，也增加了集群的效率。这个特性叫做”延迟调度”。容量调度器和公平调度器都支持这个特性。</p>
+<p>YARN集群中的每一个节点管理器都会周期性地向资源管理器发送一个心跳(默认1秒1次)。心跳会带着节点管理器上正运行容器的信息还有能提供给新容器的资源信息，所以每一次心跳对一个应用来说是一个潜在的调度启用新容器的机会。</p>
+<p>当采取延迟调度时，调度器不会简单地使用它得到的第一次调度机会，而是等待一个指定的最大的错过的调度机会数，如果达到了最大的错过的调度机会数，则会不严格按照请求来分配节点并准备在下一次调度机会来时进行调度。</p>
+<p>对于容量调度器而言，延迟调度通过yarn.scheduler.capacity.node-locality-delay属性进行配置，将此属性配置成一个正整数，表示调度器错过的调度机会数，如果达到了调度机会数，请求的那个节点仍然不能启用新容器，则将不会按照请求来执行而是在相同机架上寻找任意一个节点。</p>
+<p>公平调度器也使用调度机会数也决定延迟，然而它是用集群大小的比例来表示的。例如，将属性yarn.scheduler.fair.locality.threshold.node设置为0.5，意思是调度器应该等到集群中一半的节点都已经提供了调度机会了，请求还没有满足时，将会在相同机架中寻找另外一个节点。相应地，还有一个属性yarn.scheduler.fair.locality.threshold.rack设置机架的阈值，达到阈值后，将选择另外一个机架，而不是请求的节点所在的机架。</p>
+<h3 id="高占比资源公平分配"><a href="#高占比资源公平分配" class="headerlink" title="高占比资源公平分配"></a>高占比资源公平分配</h3><p>当只需要调度一种资源时，例如内存，不管是使用容量调度器还是公平调度器都很容易分配。如果有两个用户的应用需要运行，你可以通过比较两个应用所需要的内存来进行分配。然而，当有多种类型资源时，事情就会变得更复杂一些。如果一个用户的应用需要大量的CPU，但是却需要少量的内存，其它用户需要少量CPU，却需要大量内存，那么这两个应用该怎么比较呢？</p>
+<p>YARN框架中的调度器解决这个问题所使用的方法是看看每一个用户的高占比资源是多少，然后使用这些高占比的资源做为集群资源占用的标准。这种方法被称为”高占比资源公平分配或简称DRF”[^3]。下面用一个简单的例子加以说明。</p>
+<p>假设一个集群一共有100个CPU和10TB的内存。应用A申请2CPU，300GB内存的容器，应用B则申请6CPU，100GB。A请求的资源分别占集群总资源的2%,3%，所以内存是A应用的高占比资源，因为3%比2%大。B请求的资源分别占集群总资源的6%,1%，所以CPU是高占比资源。可以看出，就高占比资源而言，B应用请求的资源是A应用的2倍(6%vs3%)，所以在公平分配原则下，B应用分到的容器数将是A应用分到的一半。</p>
+<p>默认DRF没有启用，所以在资源计算中，仅仅只考虑内存，不考虑CPU。容量调度器通过将capacity-scheduler.xml配置文件中的属性yarn.scheduler.capacity.resource-calculator的值配置为org.apache.hadoop.yarn.util.resource.DominantResourceCalculator来启用DRF。</p>
+<p>至于公平调度器，则通过在配置文件配置顶级元素QueueSchedulingPolicy的值为drf启用DRF。</p>
+<h2 id="延伸阅读"><a href="#延伸阅读" class="headerlink" title="延伸阅读"></a>延伸阅读</h2><p>这一章简单的概括性了解了一下YARN。如果想更详细地了解，可以看Arun C. Murthy等人写的<a href="https://yarn-book.com/" target="_blank" rel="noopener">《Apache Hadoop YARN》这本书</a>。</p>
+<blockquote>
+<p>本文是笔者翻译自《OReilly.Hadoop.The.Definitive.Guide.4th.Edition》第一部分第4章，后续将继续翻译其它章节。虽尽力翻译，但奈何水平有限，错误再所难免，如果有问题，请不吝指出！希望本文对你有所帮助。</p>
+</blockquote>
+<p>[^1]:如果属性yarn.scheduler.capacity.<queue-path>.user-limit-factor值比默认的1大，则作业允许使用超过队列容量的资源<br>[^2]:然而，容量调度器可以进行预置进程保护，  资源管理器可以要求应用释放容器以平衡资源容量<br>[^3]:DRF是Ghodsi等人在2011年3月份发表的<a href="http://bit.ly/fair_allocation" target="_blank" rel="noopener">《高占比资源公平分配:多种资源的公平分配》</a>这篇文章里提出来的</queue-path></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Mr.Yang</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://cool-coding.github.io/2017/08/24/第4章-YARN/" title="第4章:YARN">https://cool-coding.github.io/2017/08/24/第4章-YARN/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/yarn/" rel="tag"># yarn</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/08/22/第3章-Hadoop分布式文件系统-2/" rel="next" title="第3章:Hadoop分布式文件系统(2)">
+                <i class="fa fa-chevron-left"></i> 第3章:Hadoop分布式文件系统(2)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/09/04/第5章-Hadoop-I-O/" rel="prev" title="第5章:Hadoop I/O">
+                第5章:Hadoop I/O <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="Mr.Yang" />
+            
+              <p class="site-author-name" itemprop="name">Mr.Yang</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">17</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">8</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/Cool-Coding" target="_blank" title="GitHub" rel="external nofollow"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:riguang_2007@163.com" target="_blank" title="E-Mail" rel="external nofollow"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#YARN应用运行分析"><span class="nav-text">YARN应用运行分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#资源请求"><span class="nav-text">资源请求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#应用的生命周期"><span class="nav-text">应用的生命周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#构建YARN应用"><span class="nav-text">构建YARN应用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#YARN与MapReduce-1比较"><span class="nav-text">YARN与MapReduce 1比较</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#YARN中的调度计划"><span class="nav-text">YARN中的调度计划</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#调度器"><span class="nav-text">调度器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#容量调度器配置"><span class="nav-text">容量调度器配置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#公平调度器的配置"><span class="nav-text">公平调度器的配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#延迟调度"><span class="nav-text">延迟调度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#高占比资源公平分配"><span class="nav-text">高占比资源公平分配</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#延伸阅读"><span class="nav-text">延伸阅读</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Mr.Yang</span>
+
+  
+
+  
+</div>
+
+
+  
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" rel="external nofollow" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" rel="external nofollow" href="https://github.com/theme-next/hexo-theme-next">NexT.Gemini</a> v6.3.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.3.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.3.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.3.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.3.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.3.0"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'UeyncgsQOpecpcqYK4Y6SMK3-gzGzoHsz',
+        appKey: 'GnpEAuxOzirt3PyRqF9iQlEv',
+        placeholder: '给点建议呗....',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("UeyncgsQOpecpcqYK4Y6SMK3-gzGzoHsz", "GnpEAuxOzirt3PyRqF9iQlEv");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

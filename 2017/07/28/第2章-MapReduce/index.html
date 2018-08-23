@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.3.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.3.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.3.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.3.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="MapReduce是一个数据处理的编程模型。这个模型很简单，但也不是简单到不能够支持一些有用的语言。Hadoop能够运行以多种语言写成的MapReduce程序。在这一章中，我们将看看怎样用Java,Ruby,Python语言来写同一个例子。更重要的是，MapReduce程序天生并发运行，这就相当于把能够进行大数据分析的工具交到了某个拥有足够多机器的人手里。 ##气候数据集在我们的例子中，将会写一个">
+<meta name="keywords" content="mapreduce">
+<meta property="og:type" content="article">
+<meta property="og:title" content="第2章:MapReduce">
+<meta property="og:url" content="https://cool-coding.github.io/2017/07/28/第2章-MapReduce/index.html">
+<meta property="og:site_name" content="半亩方塘">
+<meta property="og:description" content="MapReduce是一个数据处理的编程模型。这个模型很简单，但也不是简单到不能够支持一些有用的语言。Hadoop能够运行以多种语言写成的MapReduce程序。在这一章中，我们将看看怎样用Java,Ruby,Python语言来写同一个例子。更重要的是，MapReduce程序天生并发运行，这就相当于把能够进行大数据分析的工具交到了某个拥有足够多机器的人手里。 ##气候数据集在我们的例子中，将会写一个">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/6752673-1be1604d882867b3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/6752673-76f3dba13ba2b968.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/6752673-3742086114467bbe.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/6752673-816154db8ae486d4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/6752673-e24410db4e1c7f9e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2018-05-23T14:37:16.642Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="第2章:MapReduce">
+<meta name="twitter:description" content="MapReduce是一个数据处理的编程模型。这个模型很简单，但也不是简单到不能够支持一些有用的语言。Hadoop能够运行以多种语言写成的MapReduce程序。在这一章中，我们将看看怎样用Java,Ruby,Python语言来写同一个例子。更重要的是，MapReduce程序天生并发运行，这就相当于把能够进行大数据分析的工具交到了某个拥有足够多机器的人手里。 ##气候数据集在我们的例子中，将会写一个">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/6752673-1be1604d882867b3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+
+
+
+  <link rel="canonical" href="https://cool-coding.github.io/2017/07/28/第2章-MapReduce/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>第2章:MapReduce | 半亩方塘</title>
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-119765145-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-119765145-1');
+</script>
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">半亩方塘</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <h1 class="site-subtitle" itemprop="description">Stay foolish,Stay hungry</h1>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://cool-coding.github.io/2017/07/28/第2章-MapReduce/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Mr.Yang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="半亩方塘">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">第2章:MapReduce
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-07-28 22:19:30" itemprop="dateCreated datePublished" datetime="2017-07-28T22:19:30+08:00">2017-07-28</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/hadoop/" itemprop="url" rel="index"><span itemprop="name">hadoop</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/07/28/第2章-MapReduce/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2017/07/28/第2章-MapReduce/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2017/07/28/第2章-MapReduce/" class="leancloud_visitors" data-flag-title="第2章:MapReduce">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>MapReduce是一个数据处理的编程模型。这个模型很简单，但也不是简单到不能够支持一些有用的语言。Hadoop能够运行以多种语言写成的MapReduce程序。在这一章中，我们将看看怎样用Java,Ruby,Python语言来写同一个例子。更重要的是，MapReduce程序天生并发运行，这就相当于把能够进行大数据分析的工具交到了某个拥有足够多机器的人手里。</p>
+<p>##气候数据集<br>在我们的例子中，将会写一个程序来挖掘天气数据。天气传感器每一个小时都会在全球的许多地方收集数据，并且也收集了大量的日志数据。这些数据非常适合于用MapReduce分析。因为我们想要处理所有数据，并且这些数据是半结构化的和面向记录的。</p>
+<p>###数据格式<br>我们所使用的数据来自于<a href="https://www.ncdc.noaa.gov/" target="_blank" rel="noopener">国家气候数据中心</a>或称为NCDC。数据以行形式ASCII格式存储，每一行一条记录。这种格式支持丰富的气象属性集合，其中许多属性是可选的，长度可变的。简便起见，我们仅仅关注基本的属性，如温度。温度总是有值并且长度固定。<br><a id="more"></a><br>示例2-1显示了一行记录，并且将主要的属性进行了注释。这一行记录被分成了多行，每个属性一行。真实文件中，这些属性都会被放进一行，并且没有分隔符。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">示例:2-1</span><br><span class="line">0057</span><br><span class="line">332130 # USAF 天气基站标识</span><br><span class="line">99999 # WBAN 天气基站标识</span><br><span class="line">19500101 # 观察日期</span><br><span class="line">0300 # 观察时间</span><br><span class="line">4</span><br><span class="line">+51317 # 纬度 (角度 x 1000)</span><br><span class="line">+028783 # 经度 (角度 x 1000)</span><br><span class="line">FM-12</span><br><span class="line">+0171 # 海拔 (米)</span><br><span class="line">99999</span><br><span class="line">V020</span><br><span class="line">320 # 风向 (角度)</span><br><span class="line">1 # 质量码</span><br><span class="line">N</span><br><span class="line">0072</span><br><span class="line">1</span><br><span class="line">00450 # 天空最高高度 (米)</span><br><span class="line">1 # 质量码</span><br><span class="line">C</span><br><span class="line">N</span><br><span class="line">010000 # 可见距离 (米)</span><br><span class="line">1 # 质量码</span><br><span class="line">N</span><br><span class="line">9</span><br><span class="line">-0128 # 空气温度 (摄氏度 x 10)</span><br><span class="line">1 # 质量码</span><br><span class="line">-0139 # 露点温度 (摄氏度 x 10)</span><br><span class="line">1 # 质量码</span><br><span class="line">10268 # 大气压 (百帕 x 10)</span><br><span class="line">1 # 质量码</span><br></pre></td></tr></table></figure></p>
+<p>数据文件按照日期和天气基站整理。从1901到2001，每一年都有一个目录文件。每一个目录文件中包括每一个天气基站收集到的当年气候数据的压缩文件。例如1990年部分文件:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">% ls raw/1990 | head</span><br><span class="line">010010-99999-1990.gz</span><br><span class="line">010014-99999-1990.gz</span><br><span class="line">010015-99999-1990.gz</span><br><span class="line">010016-99999-1990.gz</span><br><span class="line">010017-99999-1990.gz</span><br><span class="line">010030-99999-1990.gz</span><br><span class="line">010040-99999-1990.gz</span><br><span class="line">010080-99999-1990.gz</span><br><span class="line">010100-99999-1990.gz</span><br><span class="line">010150-99999-1990.gz</span><br></pre></td></tr></table></figure></p>
+<p>由于有成千上万个天气基站，所以每一年都由大量的相关小文件组成。通常处理少量的大文件更容易和有效。所以这些数据需要被预处理，使每一年的所有记录都被放到一个文件中(附录C中有详细的方法说明)。</p>
+<p>##使用Unix工具分析<br>如何获取每一年的全球最高温度呢？我们首先不使用Hadoop工具来回答这个问题。<br>这将会为我们提供一个性能基准线和检查我们往后的结果是否准确的方法。<br>经典的处理行结构数据的工具是awk。示例2-2向我们展示了如何获取每一年全球最高温度。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">示例2-2</span><br><span class="line">#!/usr/bin/env bash</span><br><span class="line">for year in all/*</span><br><span class="line">do</span><br><span class="line">echo -ne `basename $year .gz`&quot;\t&quot;</span><br><span class="line">gunzip -c $year | \</span><br><span class="line">awk &apos;&#123; temp = substr($0, 88, 5) + 0;</span><br><span class="line">q = substr($0, 93, 1);</span><br><span class="line">if (temp !=9999 &amp;&amp; q ~ /[01459]/ &amp;&amp; temp &gt; max) max = temp &#125;</span><br><span class="line">END &#123; print max &#125;&apos;</span><br><span class="line">done</span><br><span class="line">`</span><br></pre></td></tr></table></figure></p>
+<p>这个脚本循环处理已经压缩的年文件，首先输出年度值，然后使用awk处理每一个文件。awk脚本从这些数据中提取出空气温度和质量码。空气温度通过加0转换成整数，下一步，判断温度(温度9999在NCDC中表示没检测到温度)和质量码是否有效。质量码表示此温度值是否准确或者错误。如果温度值没有问题，则与目前为止最高温度相比较，如果比目前最高温度高，则更新最高温度。当文件中所有行被处理之后，END块被执行，打印出最高温度。下面看看部分运行结果:<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">% ./max_temperature.sh</span><br><span class="line">1901 317</span><br><span class="line">1902 244</span><br><span class="line">1903 289</span><br><span class="line">1904 256</span><br><span class="line">1905 283</span><br><span class="line">...</span><br><span class="line">`</span><br></pre></td></tr></table></figure></p>
+<p>源文件中的温度值被扩大了10倍，所以1901年的最高温度是31.7摄氏度，由于在20世纪初读取到的气候值非常有限，所以这个结果只能是近似真实。在硬件是单个超大型高CPU EC2实例计算中跑完整个世纪的数据花了42分钟。</p>
+<p>为了提高处理速度，我们需要并行运行部分程序。理论上，我们很容易想到可以使用计算机中所有可用的线程并行处理不同的年份数据。但是这样仍然存在一些问题。</p>
+<p>首先，将整个处理工作进程等分为相同的部分并不简单或明显。在这个例子中，不同的年份的文件大小不一样，并且有的差别很大。所有一些处理进程将会完成地早一些，一些将会晚一些。即时完成早的进程再处理其它工作，整个运行时间仍然被最大的文件限制。一个更好的途径是将输入数据分成大小相等的块，并且处理每一个数据块。虽然这样可能造成更多的工作量。</p>
+<p>第二，将每一个独立的处理结果合并在一起需要额外处理工作。在这个例子中，每一年的处理结果都是相互独立的。这些结果会被连接在一起，并且按年排序。如果通过数据量大小数据块途径，合并将更加容易出错。就这个例子而言，某一年的数据可能被分成多个数据块，每一个数据块都单独处理，并得到每一块的最高温度。最后，我们还需要找到某年中这些块中最高温度中的最高温度作为这一年的最高温度。</p>
+<p>第三，你仍然会被单个计算机的处理能力限制。如果用单个计算机中所有的处理器，最快的处理时间是20分钟，那么，你不可能更快。而且有的数据集超过单个计算机的处理能力。当使用多台计算机一起处理时，一些其它的因素又会影响性性能，主要有协调性和可靠性两类。谁来执行所有的作业？我们将怎么处理失败的进程？</p>
+<p>所以，虽然并行处理是可行的，但却是不那么容易控制的，是复杂的。使用像Hadoop这样的框架来处理这些问题极大地帮助了我们。</p>
+<p>##使用Hadoop分析数据<br>为了充分利用Hadoop提供的并行处理优势，我们需要将我们的查询写在一个MapReduce作业中。在本地的，小数据量地测试后，我们将能够在集群中运行它。</p>
+<p>###Map和Reduce<br>MapReduce将处理过程分成两阶段，map阶段和reduce阶段。每阶段将key-value键值对做为输入和输出。开发者可以选择输入输出参数类型，也能指定两个函数：map函数和reduce函数。</p>
+<p>map阶段的输入数据是原始的NCDC数据。我们选择文本格式。文本中的每一行表示一条文本记录。key值是行开头距离当前文件开头的位移，但是我们不需要它，忽略即可。</p>
+<p>map函数很简单。因为我们仅关心年份和温度，所以获取每行的年度和温度即可，其它属性不需要。这个例子中，仅仅是一个数据准备阶段，以某种方法准备reduce函数能够处理的数据。map函数还是一个丢弃坏记录的地方，例如那些没有测量到的，不准备的或错误的温度。</p>
+<p>为了展现map怎么样工作的，选取少量的输入数据进行说明(为了适应页面宽度，一些没有使用到的列用省略号表示)<br>0067011990999991950051507004…9999999N9+00001+99999999999…<br>0043011990999991950051512004…9999999N9+00221+99999999999…<br>0043011990999991950051518004…9999999N9-00111+99999999999…<br>0043012650999991949032412004…0500001N9+01111+99999999999…<br>0043012650999991949032418004…0500001N9+00781+99999999999…<br>这些行以key-value的形式提供给map函数:<br>(0, 006701199099999<strong>1950</strong>051507004…9999999N9<strong>+0000</strong>1+99999999999…)<br>(106, 004301199099999<strong>1950</strong>051512004…9999999N9<strong>+0022</strong>1+99999999999…)<br>(212, 004301199099999<strong>1950</strong>051518004…9999999N9-<strong>0011</strong>1+99999999999…)<br>(318, 004301265099999<strong>1949</strong>032412004…0500001N9<strong>+0111</strong>1+99999999999…)<br>(424, 004301265099999<strong>1949</strong>032418004…0500001N9<strong>+0078</strong>1+99999999999…)<br>关键值是行的位移，在map函数中我们可以忽略它。map函数仅仅需要获取到年度和温度值(以粗体表示的数据)，然后输出。输出的时候将温度值转换成整数。<br>(1950, 0)<br>(1950, 22)<br>(1950, −11)<br>(1949, 111)<br>(1949, 78)</p>
+<p>map的输出结果在被送往reduce函数之前被MapReduce框架按照关键字排序合并处理。所以在进行下一步之前，reduce函数会接收到如下数据:<br>(1949, [111, 78])<br>(1950, [0, 22, −11])<br>如上所示，每一年的所有温度值都合并到一个列表中。reduce函数所要做的就是遍历每一年的温度，然后找到最高温度。<br>(1949, 111)<br>(1950, 22)<br>以上就是最终的输出：每一年的最高温度。<br>整个数据流程如图2-1所示。在图表底部是对应的Unix命令。它模拟整个MapReduce流程，我们将会在这章节的后面Hadoop Streaming中看到。<img src="http://upload-images.jianshu.io/upload_images/6752673-1be1604d882867b3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="图2-1 MapReduce逻辑数据流程图"></p>
+<p>###JAVA MapReduce<br>在知道了MapReduce程序怎么样工作了之后，下一步是用代码实现它。我们需要做三件事情:map函数，reduce函数，运行作业的代码。map功能以Mapper抽象类表示<br>，它申明了一个map()抽象方法。示例2-3显示了map函数的实现。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">示例<span class="number">2</span>-<span class="number">3</span></span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.io.IntWritable;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.io.LongWritable;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.io.Text;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.mapreduce.Mapper;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MaxTemperatureMapper</span></span></span><br><span class="line"><span class="class">      <span class="keyword">extends</span> <span class="title">Mapper</span>&lt;<span class="title">LongWritable</span>, <span class="title">Text</span>, <span class="title">Text</span>, <span class="title">IntWritable</span>&gt; </span>&#123;</span><br><span class="line">      <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MISSING = <span class="number">9999</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">map</span><span class="params">(LongWritable key, Text value, Context context)</span></span></span><br><span class="line"><span class="function">          <span class="keyword">throws</span> IOException, InterruptedException </span>&#123;</span><br><span class="line">          String line = value.toString();</span><br><span class="line">          String year = line.substring(<span class="number">15</span>, <span class="number">19</span>);</span><br><span class="line">          <span class="keyword">int</span> airTemperature;</span><br><span class="line">          <span class="keyword">if</span> (line.charAt(<span class="number">87</span>) == <span class="string">'+'</span>) &#123; <span class="comment">// parseInt doesn't like leading plus signs</span></span><br><span class="line">            airTemperature = Integer.parseInt(line.substring(<span class="number">88</span>, <span class="number">92</span>));</span><br><span class="line">          &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            airTemperature = Integer.parseInt(line.substring(<span class="number">87</span>, <span class="number">92</span>));</span><br><span class="line">          &#125;</span><br><span class="line">          String quality = line.substring(<span class="number">92</span>, <span class="number">93</span>);</span><br><span class="line">          <span class="keyword">if</span> (airTemperature != MISSING &amp;&amp; quality.matches(<span class="string">"[01459]"</span>)) &#123;</span><br><span class="line">            context.write(<span class="keyword">new</span> Text(year), <span class="keyword">new</span> IntWritable(airTemperature));</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Mapper类是一个泛型，有四个形参，分别表示输入key，输入值,输出key,和map函数输出值类型。就当前的例子来说，输入key是一个长整型的位移，输入值是一行文本，输出key是年份，输出会是是空气温度(整数)。Hadoop使用它自己的基本类型集而不使用JAVA内建的基本类型。因为Hadoop自己的基本类型对网络序列化进行了优化。这些基本类型可以在 org.apache.hadoop.io pack‐<br>age中找到。这里我们使用 LongWritable类型，它表示长文本类型，对应了Java的String类型，又使用了 IntWritable类型，对应于Java的Integer类型。</p>
+<p>map函数被传了一个key值和一个value值，我们把包含输入的一行文本转换成Java String类型数据，并使用String的SubString方法取到我们感兴趣的列值。</p>
+<p>map函数也提供了一个Context实例，以便将输出结果写入其中。在我们的这个例子中，我们把年份作为文本类型Key值写到Context中，把温度封闭成IntWritable类型也写入Context.并且只有温度有效并且质量码显示当前温度的获取是正常的时候才写入。</p>
+<p>reduce功能类似地用Reduce抽象类表示，实例类见示例2-4<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">示例<span class="number">2</span>-<span class="number">4</span></span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.io.IntWritable;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.io.Text;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.mapreduce.Reducer;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MaxTemperatureReducer</span></span></span><br><span class="line"><span class="class">    <span class="keyword">extends</span> <span class="title">Reducer</span>&lt;<span class="title">Text</span>, <span class="title">IntWritable</span>, <span class="title">Text</span>, <span class="title">IntWritable</span>&gt; </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">reduce</span><span class="params">(Text key, Iterable&lt;IntWritable&gt; values, Context context)</span></span></span><br><span class="line"><span class="function">      <span class="keyword">throws</span> IOException, InterruptedException </span>&#123;</span><br><span class="line">      <span class="keyword">int</span> maxValue = Integer.MIN_VALUE;</span><br><span class="line">      <span class="keyword">for</span> (IntWritable value : values) &#123;</span><br><span class="line">        maxValue = Math.max(maxValue, value.get());</span><br><span class="line">      &#125;</span><br><span class="line">      context.write(key, <span class="keyword">new</span> IntWritable(maxValue));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Reduce抽象类也是一个泛型类，也具有四个形参。reduce函数的输入类型必须匹配map的输出类型，即Text和IntWritable.此例子中，reduce函数的输出是Text和IntWritable类型，分别表示年份与当前年份最高温度。通过遍历温度值，将当前温度值与最高温度比较来找到当前年份的最高温度。</p>
+<p>第三部分是运行MapReduce作业的代码，见示例2-5.<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">示例<span class="number">2</span>-<span class="number">5</span></span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.fs.Path;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.io.IntWritable;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.io.Text;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.mapreduce.Job;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.mapreduce.lib.input.FileInputFormat;</span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;</span><br><span class="line"> </span><br><span class="line">   <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MaxTemperature</span> </span>&#123;</span><br><span class="line">      <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (args.length != <span class="number">2</span>) &#123;</span><br><span class="line">        System.err.println(<span class="string">"Usage: MaxTemperature &lt;input path&gt; &lt;output path&gt;"</span>);</span><br><span class="line">        System.exit(-<span class="number">1</span>);</span><br><span class="line">      &#125;</span><br><span class="line">      Job job = <span class="keyword">new</span> Job();</span><br><span class="line">      job.setJarByClass(MaxTemperature.class);</span><br><span class="line">      job.setJobName(<span class="string">"Max temperature"</span>);</span><br><span class="line">      FileInputFormat.addInputPath(job, <span class="keyword">new</span> Path(args[<span class="number">0</span>]));</span><br><span class="line">      FileOutputFormat.setOutputPath(job, <span class="keyword">new</span> Path(args[<span class="number">1</span>]));</span><br><span class="line">      job.setMapperClass(MaxTemperatureMapper.class);</span><br><span class="line">      job.setReducerClass(MaxTemperatureReducer.class);</span><br><span class="line">      job.setOutputKeyClass(Text.class);</span><br><span class="line">      job.setOutputValueClass(IntWritable.class);</span><br><span class="line">      System.exit(job.waitForCompletion(<span class="keyword">true</span>) ? <span class="number">0</span> : <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Job对象指明运行一个作业所需要的所有设置以及让你控制作业如何执行。当我们在一个Hadoop集群上运行这个作业的时候，我们需要将代码打包成JAR文件，Hadoop会把JAR文件在集群中分发。我们可以通过setJarByClass方法指定类文件，而不需要显示指明JAR文件的名字。Hadoop会搜索包含setJarByClass指定的类的相关JAR文件。</p>
+<p>创建了一个实例Job后，指定输入和输出文件路径。通过调用  FileInputFormat 的静态方法addInputPath()指定输入路径，此路径可以是一个文件，也可以是一个目录。如果是一个目录，输入的数据包含此目录下所有文件。还可以是文件类型。就像方法名所表示的那样，addInputPath()可以被调用多次以便添加多个输入路径。</p>
+<p>输出路径通过FileOutputFormat 的静态方法setOutputPath()指定。输出路径仅可以指定一次。它指定了一个目录。reduce会把它的输出结果的文件放到这个目录下。这个目录在运行Hadoop之前不应该存在。因为如果存在Hadoop将会报错并不会执行作业。这是为了预防数据丢失。因为如果不小心覆盖了同一目录下其它作业的输出结果将是非常令人懊恼的。</p>
+<p>下一步使用  setMapperClass() 和setReducerClass()方法指定map和reduce类。setOutputKeyClass()和 setOutputValueClass()方法控制reduce函数输出参数的类型。必须和Reduce抽象类中参数的一致。map输出参数的类型默认是相同的类型。所以如果map和reduce函数有相同的输出参数类型时就不需要特别指定了。就像我们这个例子这样。然而，如果它们不相同，就需要通过 setMapOutputKeyClass() 和setMapOutputValueClass()函数来指定map的输出参数类型。</p>
+<p>map函数的输入参数类型通过输入格式指定。我们没有显示地设置，因为我们使用了默认的TextInputFormat格式。</p>
+<p>在指定了自定义的map和reduce函数之后，就可以准备执行作业了。Job类的waitForCompletion()方法用于提交作业，并用等待作业完成。这个方法需要一个参数，用以表示是否将作业日志详细信息输出到控制台。如果为true，就输出。这个方法的返回值是一个布尔类型，用于表示作业的执行成功与否。成功返回true,失败返回false。这里我们将成功与否转换成了0或1。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">这部分使用的Java MapReduce API以及这本书所使用的所有API被称为&quot;New API&quot;。  </span><br><span class="line">它代替了功能相同的老的API。这两种API区别请查看附录D，并且附录D有如何在这两种API转换的相关建议。当然你也能在这儿用旧的API完成相同功能的获取每年最高温度的应用。</span><br></pre></td></tr></table></figure></p>
+<p>###测试运行<br>在完成MapReduce作业编写之后，正常情况下使用少量数据集测试运行，方便立即检测出代码问题。首先以脱机模式安装Hadoop(附录A中有说明),这个模式下Hadoop使用本地文件生成本地作业运行。可以在这本书的网站上找到安装和编译这个示例的说明。<br>让我们使用上面五行数据运行这个作业，输出结果稍微调整了一下以便适应页面，并且有一些行被删除了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><span class="line">% export HADOOP_CLASSPATH=hadoop-examples.jar</span><br><span class="line">% hadoop MaxTemperature input/ncdc/sample.txt output</span><br><span class="line">14/09/16 09:48:39 WARN util.NativeCodeLoader: Unable to load native-hadoop</span><br><span class="line">library for your platform... using builtin-java classes where applicable</span><br><span class="line">14/09/16 09:48:40 WARN mapreduce.JobSubmitter: Hadoop command-line option</span><br><span class="line">parsing not performed. Implement the Tool interface and execute your application</span><br><span class="line">with ToolRunner to remedy this.</span><br><span class="line">14/09/16 09:48:40 INFO input.FileInputFormat: Total input paths to process : 1</span><br><span class="line">14/09/16 09:48:40 INFO mapreduce.JobSubmitter: number of splits:1</span><br><span class="line">14/09/16 09:48:40 INFO mapreduce.JobSubmitter: Submitting tokens for job:</span><br><span class="line">job_local26392882_0001</span><br><span class="line">14/09/16 09:48:40 INFO mapreduce.Job: The url to track the job:</span><br><span class="line">http://localhost:8080/</span><br><span class="line">14/09/16 09:48:40 INFO mapreduce.Job: Running job: job_local26392882_0001</span><br><span class="line">14/09/16 09:48:40 INFO mapred.LocalJobRunner: OutputCommitter set in config null</span><br><span class="line">14/09/16 09:48:40 INFO mapred.LocalJobRunner: OutputCommitter is</span><br><span class="line">org.apache.hadoop.mapreduce.lib.output.FileOutputCommitter</span><br><span class="line">14/09/16 09:48:40 INFO mapred.LocalJobRunner: Waiting for map tasks</span><br><span class="line">14/09/16 09:48:40 INFO mapred.LocalJobRunner: Starting task:</span><br><span class="line">attempt_local26392882_0001_m_000000_0</span><br><span class="line">14/09/16 09:48:40 INFO mapred.Task: Using ResourceCalculatorProcessTree : null</span><br><span class="line">14/09/16 09:48:40 INFO mapred.LocalJobRunner:</span><br><span class="line">14/09/16 09:48:40 INFO mapred.Task: Task:attempt_local26392882_0001_m_000000_0</span><br><span class="line">is done. And is in the process of committing</span><br><span class="line">14/09/16 09:48:40 INFO mapred.LocalJobRunner: map</span><br><span class="line">14/09/16 09:48:40 INFO mapred.Task: Task &apos;attempt_local26392882_0001_m_000000_0&apos;</span><br><span class="line">done.</span><br><span class="line">14/09/16 09:48:40 INFO mapred.LocalJobRunner: Finishing task:</span><br><span class="line">attempt_local26392882_0001_m_000000_0</span><br><span class="line">14/09/16 09:48:40 INFO mapred.LocalJobRunner: map task executor complete.</span><br><span class="line">14/09/16 09:48:40 INFO mapred.LocalJobRunner: Waiting for reduce tasks</span><br><span class="line">14/09/16 09:48:40 INFO mapred.LocalJobRunner: Starting task:</span><br><span class="line">attempt_local26392882_0001_r_000000_0</span><br><span class="line">14/09/16 09:48:40 INFO mapred.Task: Using ResourceCalculatorProcessTree : null</span><br><span class="line">14/09/16 09:48:40 INFO mapred.LocalJobRunner: 1 / 1 copied.</span><br><span class="line">14/09/16 09:48:40 INFO mapred.Merger: Merging 1 sorted segments</span><br><span class="line">14/09/16 09:48:40 INFO mapred.Merger: Down to the last merge-pass, with 1</span><br><span class="line">segments left of total size: 50 bytes</span><br><span class="line">14/09/16 09:48:40 INFO mapred.Merger: Merging 1 sorted segments</span><br><span class="line">14/09/16 09:48:40 INFO mapred.Merger: Down to the last merge-pass, with 1</span><br><span class="line">segments left of total size: 50 bytes</span><br><span class="line">14/09/16 09:48:40 INFO mapred.LocalJobRunner: 1 / 1 copied.</span><br><span class="line">14/09/16 09:48:40 INFO mapred.Task: Task:attempt_local26392882_0001_r_000000_0</span><br><span class="line">is done. And is in the process of committing</span><br><span class="line">14/09/16 09:48:40 INFO mapred.LocalJobRunner: 1 / 1 copied.</span><br><span class="line">14/09/16 09:48:40 INFO mapred.Task: Task attempt_local26392882_0001_r_000000_0</span><br><span class="line">28  |  Chapter 2: MapReduce</span><br><span class="line">is allowed to commit now</span><br><span class="line">14/09/16 09:48:40 INFO output.FileOutputCommitter: Saved output of task</span><br><span class="line">&apos;attempt...local26392882_0001_r_000000_0&apos; to file:/Users/tom/book-workspace/</span><br><span class="line">hadoop-book/output/_temporary/0/task_local26392882_0001_r_000000</span><br><span class="line">14/09/16 09:48:40 INFO mapred.LocalJobRunner: reduce &gt; reduce</span><br><span class="line">14/09/16 09:48:40 INFO mapred.Task: Task &apos;attempt_local26392882_0001_r_000000_0&apos;</span><br><span class="line">done.</span><br><span class="line">14/09/16 09:48:40 INFO mapred.LocalJobRunner: Finishing task:</span><br><span class="line">attempt_local26392882_0001_r_000000_0</span><br><span class="line">14/09/16 09:48:40 INFO mapred.LocalJobRunner: reduce task executor complete.</span><br><span class="line">14/09/16 09:48:41 INFO mapreduce.Job: Job job_local26392882_0001 running in uber</span><br><span class="line">mode : false</span><br><span class="line">14/09/16 09:48:41 INFO mapreduce.Job: map 100% reduce 100%</span><br><span class="line">14/09/16 09:48:41 INFO mapreduce.Job: Job job_local26392882_0001 completed</span><br><span class="line">successfully</span><br><span class="line">14/09/16 09:48:41 INFO mapreduce.Job: Counters: 30</span><br><span class="line">File System Counters</span><br><span class="line">FILE: Number of bytes read=377168</span><br><span class="line">FILE: Number of bytes written=828464</span><br><span class="line">FILE: Number of read operations=0</span><br><span class="line">FILE: Number of large read operations=0</span><br><span class="line">FILE: Number of write operations=0</span><br><span class="line">Map-Reduce Framework</span><br><span class="line">Map input records=5</span><br><span class="line">Map output records=5</span><br><span class="line">Map output bytes=45</span><br><span class="line">Map output materialized bytes=61</span><br><span class="line">Input split bytes=129</span><br><span class="line">Combine input records=0</span><br><span class="line">Combine output records=0</span><br><span class="line">Reduce input groups=2</span><br><span class="line">Reduce shuffle bytes=61</span><br><span class="line">Reduce input records=5</span><br><span class="line">Reduce output records=2</span><br><span class="line">Spilled Records=10</span><br><span class="line">Shuffled Maps =1</span><br><span class="line">Failed Shuffles=0</span><br><span class="line">Merged Map outputs=1</span><br><span class="line">GC time elapsed (ms)=39</span><br><span class="line">Total committed heap usage (bytes)=226754560</span><br><span class="line">File Input Format Counters</span><br><span class="line">Bytes Read=529</span><br><span class="line">File Output Format Counters</span><br><span class="line">Bytes Written=29</span><br></pre></td></tr></table></figure></p>
+<p>当我们在hadoop命令第一个参数填写一个类名的时候，会启动一个JVM(JAVA虚拟机),并执行这个类。hadoop命令添加hadoop库和库所依赖的其它库文件到Classpath变量，并且加载hadoop配置。为了将应用中的类文件添加到classpath中，我们定义了一个 HADOOP_CLASSPATH环境变量，来加载我们所写的hadoop脚本。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">当以本地(脱机)模式运行时，这本书中所有程序都假设你已经以这种方法设置了 HADOOP_CLASSPATH环境变量。这条命令应该在示例代码所在目录运行。</span><br></pre></td></tr></table></figure>
+<p>作业运行日志提供了一些有用的信息。例如，我们能看到这个作业被给了一个作业ID：job_local26392882_0001.运行了一个map任务和一个reduce任务(ID分别是:attempt_local26392882_0001_m_000000_0 和attempt_local26392882_0001_r_000000_0)。知道作业和任务ID在调用MapReduce作业时将很有用。</p>
+<p>最后还有一部分名为”Counters”的数据，这部分数据是Hadoop为每一个作业生成的统计信息。这些信息将对于检查处理的数据与预期的数据是否一样非常有用。例如，我们能知道通过系统各部分的记录数，5条map输入记录，5条map输出记录(可以看出map对于每一条有效的输入记录都有对应的一条输出记录)。还能看出以key值分成2组的5条reduce输入记录，以及2条输出记录。</p>
+<p>输出结果写入输出目录。每一个reduce函数生成一个输出文件。这个作业只有一个reduce函数，所以只产生一个文件。名称是part-r-00000:<br>% cat output/part-r-00000<br>1949 111<br>1950 22</p>
+<p>这个结果跟之前手工计算的一致。这个结果表示1949年最高温度是11.1摄氏度，1950是2.2度。</p>
+<p>##扩展<br>你已经知道了MapReduce怎么样处理少量数据。现在是时候全局看系统，并且对于大数据处理的数据流。简单来说，到目前为止，我们所举的例子都用的本地计算机的文件。更进一步，我们将要在分布计算机(特别是HDFS，我们将在下一节中学到)中存储文件数据。使用Hadoop的资源管理系统YARN(第4节),Hadoop会将MapReduce计算过程分发到各个计算机中计算，而这些计算机每一台都保存着一部分数据。让我们来看看这些是如何发生的。</p>
+<p>###工作流<br>首先，MapReduce作业是客户端需要去执行的工作单元。它包括输入数据，MapReduce程序以及一些配置信息。Hadoop会把这个作业分成多个任务步骤执行。有两种类型：map任务和reduce任务。这些任务通过YARN计划调度并在分布式系统节点上运行。如果一个任务失败了，YARN会把它放到另外一个节点上重新运行。</p>
+<p>Hadoop会把输入数据化分成大小相同的数据片断(被称为输入片或均片),Hadoop会为每一个片创建一个map任务。map任务会一条条记录地循环执行用户自定义的map函数，直到这个片断中所有记录处理完毕。</p>
+<p>很多片断意味着处理每一个片断的时间比一次处理整个输入数据的时间少。所以当我们并发地处理这些片断，而这些片断很小时，能够更好地负载均衡。所以一个性能好的机器比一个性能差些的机器能够相应在处理更多地片断。即使这些机器性能完全一样，失败的处理进程或者同时运行的作业使负载均衡成为可能(Even if the machines are identical, failed processes or other jobs running<br>concurrently make load balancing desirable)。并且当片断细粒度越高，负载均衡的质量也会越高。</p>
+<p>别外一方面，如果片断过于小，管理片断和创建Map任务所花费的时候则会成为整个作业执行时间的瓶颈。对于大多数作业来说，一个好的片断大小趋向于一个HDFS块的大小，默认是128M。这个大小可以被集群(Cluster)改变（集群的改为会影响在机群中新创建的所有文件),或者文件新建时就指定。</p>
+<p>Hadoop尽量会在输入数据存放的HDFS那个节点运行Map任务，因为这样不会占用宝贵的集群带宽资源。这被称为本地优化。然后，有时候拥有HDFS数据的节点上正运行着其它Map任务，作业调试器会尝试着在当前集群其它空闲的节点上创建一个Map任务。极少情况下，会到其它集群中的某个节点中创建一个Map任务，这样就需要集群间网络传输。这三种可能性在图表2-2中展示:<img src="http://upload-images.jianshu.io/upload_images/6752673-76f3dba13ba2b968.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="图2-2"></p>
+<p>现在清楚了为什么最优的片断大小是设置成HDFS块大小。因为这样做是数据能被存储在一个节点上的最大数据量。如果一个片断跨两个块大小，任何一个HDFS节点都不太可能储存两个块大小的数据量，这个势必会造成片断的部分数据通过网络传输到正在运行Map任务的节点上。这明显的比直接在本地运行Map任务的性能差一些。</p>
+<p>Map任务会将它的输出结果写入本地硬盘中，而不是HDFS，为什么要这样做？因为Map的输出只是中间的输出，后续它将会被Reduce任务处理产生最终输出结果。一旦作业完成了，Map的输出结果可以被丢弃，所以将Map的输出结果复制到HDFS中不必要的。如果在Reduce利用Map的输入结果前，节点运行失败了。Hadoop将在自动的在另外一个节点中重新执行这个Map任务，重新产生输入结果。</p>
+<p>Reduce任务没有像Map任务那样利用数据本地化的优势，一个Reduce任务的输入往往来自所有Map任务的输出。就拿目前的例子来说，我们有一个Reduce任务，其输入数据来自所有的Map任务。因此存储的Map结果必须通过网络传输到运行Reduce的节点上。之后这些传过来的数据会被合并，并传到用户自定义的reduce函数中执行。Reduce的输出结果正常都会存储在HDFS中。就像第三节说明的，对于存储Reduce输出结果的每一个HDFS块，第一份复制的数据会存储在本地，其它复制的数据会存储在其它集群可靠的HDFS块中。因此存储Reduce的输出结果确定需要消耗网络带宽，但也仅仅和一个正常的HDFS输出通道消耗的一样多。</p>
+<p>拥有一个Reduce任务的数据流在图表2-3中展示。虚线框表示节点，虚线箭头表示节点内的数据传输。实线的箭头表示节点间的数据传输。<img src="http://upload-images.jianshu.io/upload_images/6752673-3742086114467bbe.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="图2-3 单个Reduce任务的MapReduce数据流"></p>
+<p>Reduce任务的个数不是由输入数据量的大小决定，而是单独指定的。在”默认的MapReduce作业”那一节，你将会看到对于给定的作业，如何选择Reduce任务的个数。</p>
+<p>当有多个reduce时，map任务会将它们的结果分区，每一个map任务会为每一个reduce任务创建一个分区。每一个分区里可以用很多个key和ke关联的值，但某一个key的所有记录必须在同一个分区里。分区这个过程能够被用户自定义的函数控制，但一般来讲，默认的分区函数已经能够工作地很好了。它使用哈希函数来将key分类。</p>
+<p>多个reduce的一般数据流程图在图表2-4显示。这张图表清楚地显示了map和reduce之间的数据流为什么被通俗地叫做”洗牌”。”洗牌”的过程比这个图表显示的更复杂。你将会在”洗牌和排序”这一节中看到，调整它可以对作业的运行时间有很大影响。<img src="http://upload-images.jianshu.io/upload_images/6752673-816154db8ae486d4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="图2-4 多个reduce任务的MapReduce数据流"></p>
+<p>最后，也可以有零个reduce任务。这种情况发生在仅并发执行map任务就能够输出结果的时候。此时数据的传输仅发生在map的输出结果写入HDFS的时候(如图2-5)。<br><img src="http://upload-images.jianshu.io/upload_images/6752673-e24410db4e1c7f9e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="图2-5 零reduce任务的MapReduce数据流"></p>
+<p>###组合函数(Combiner Function)<br>许多MapReduce作业执行时间被集群的带宽资源限制。所以值得我们去尽量减少map与reduce之间传输的数据量。Hadoop允许用户指定一个组合函数，以便在map输出结果后执行。这个组合函数的输出形成了reduce任务的输入。由于组合函数是优化函数，所以Hadoop不能确保为每一个map输出记录调用多少次组合函数。也就是说，零次，一次或多次调用组合函数，reduce最终都应该输出相同的结果。</p>
+<p>组合函数的这种特性限制了它能被使用的业务情形。用一个例子能更好说明。假设最大的温度，例如1950的，被两个map任务处理,因为1950年数据分布在不同的片断中。假如第一个map任务输出如下结果:<br>(1950,0)<br>(1950,20)<br>(1950,10)<br>第二个map输出如下结果:<br>(1950,25)<br>(1950,15)<br>Hadoop将会用以上所有值组成列表传给reduce<br>(1950,[0,20,10,25,15])<br>输出：<br>(1950,25)<br>既然25是当前列表最大的值。我们就像使用reduce函数一样用一个组合函数找出每一个map结果中的最大温度值。这样的话，reduce得到以下值:<br>(1950,[20,25])<br>并且产生与之前相同的结果。我们可以用一种更简洁的方式表示上面的过程：<br>max(0, 20, 10, 25, 15) = max(max(0, 20, 10), max(25, 15)) = max(20, 25) = 25<br>然而，并不是所有这样的处理都是合适的，例如，我们要计算平均温度，就不能在组合函数中计算平均温度，因为:mean(0, 20, 10, 25, 15) = 14,但是mean(mean(0, 20, 10), mean(25, 15)) = mean(10, 20) = 15。</p>
+<p>组合函数不能代替Reduce函数(Reduce函数仍然需要用来处理来自不同map的含有相同key值的记录)，但是它能帮助减少在map与reduce之间传递的数据量。因此，在你的MapReduce作业中，总是值得我们考虑是否使用组合函数。</p>
+<p>####指定组合函数<br>回到之前JAVA MapReduce程序，组合函数使用Reduce类定义，在这个应用中，它与Reduce功能一样。我们唯一要做的就是在作业中设定组合类(示例2-6)。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">示例<span class="number">2</span>-<span class="number">6</span></span><br><span class="line">      <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MaxTemperatureWithCombiner</span> </span>&#123;</span><br><span class="line">       <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">          <span class="keyword">if</span> (args.length != <span class="number">2</span>) &#123;</span><br><span class="line">             System.err.println(<span class="string">"Usage: MaxTemperatureWithCombiner   </span></span><br><span class="line"><span class="string">             &lt;input path&gt; "</span> +<span class="string">"&lt;output path&gt;"</span>);</span><br><span class="line">            System.exit(-<span class="number">1</span>);</span><br><span class="line">           &#125;</span><br><span class="line">       Job job = <span class="keyword">new</span> Job();</span><br><span class="line">       job.setJarByClass(MaxTemperatureWithCombiner.class);</span><br><span class="line">       job.setJobName(<span class="string">"Max temperature"</span>);</span><br><span class="line">       FileInputFormat.addInputPath(job, <span class="keyword">new</span> Path(args[<span class="number">0</span>]));</span><br><span class="line">       FileOutputFormat.setOutputPath(job, <span class="keyword">new</span> Path(args[<span class="number">1</span>]));</span><br><span class="line">       job.setMapperClass(MaxTemperatureMapper.class);</span><br><span class="line">       job.setCombinerClass(MaxTemperatureReducer.class);</span><br><span class="line">       job.setReducerClass(MaxTemperatureReducer.class);</span><br><span class="line">       job.setOutputKeyClass(Text.class);</span><br><span class="line">       job.setOutputValueClass(IntWritable.class);</span><br><span class="line">       System.exit(job.waitForCompletion(<span class="keyword">true</span>) ? <span class="number">0</span> : <span class="number">1</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<p>###运行一个分布式的MapReduce作业<br>相同的程序将在全量数据库执行。MapReduce特性是无形中扩大了能处理的数据量大小和硬件体积，运行在10个节点的EC2集群上，这个程序跑了6分钟。在第6节中我们将会看看在集群中运行程序具体的一些技术特性。</p>
+<p>##Hadoop Streaming<br>Hadoop给MapReduce提供了API允许你用除了JAVA语言之外的其它语言写map和reduce函数。Hadoop流使用Unix系统标准流作业Hadoop和你的程序之间的接口，所以你能使用任意其它的能够读取Unix系统标准流输入数据并能够将数据写到标准输出的语言来写MapReduce程序。</p>
+<p>流天生地就适用于文本处理。Map的输入数据通过标准的输入流输入到你自定义的map函数中。在map函数中，你将会一行一行的处理数据，然后将这些数据写入到输出流中。map会用Tab分隔key和value，并将它们做为键值对单独一行输出。这些数据将会以相同的格式做为reduce函数的输入。在输入之间，框架将会把它们按照键值排序，然后reduce会处理这些行，然后将结果输出到标准的输出流。</p>
+<p>让我们以流的方式重写查找每一年最高温度的MapReduce程序来说明。</p>
+<p>###Ruby<br>map函数以Ruby语言编写，见示例2-7<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">示例<span class="number">2</span>-<span class="number">7</span></span><br><span class="line"><span class="comment">#!/usr/bin/env ruby</span></span><br><span class="line">STDIN.each_line <span class="keyword">do</span> <span class="params">|line|</span></span><br><span class="line">val = line</span><br><span class="line">year, temp, q = val[<span class="number">15</span>,<span class="number">4</span>], val[<span class="number">87</span>,<span class="number">5</span>], val[<span class="number">92</span>,<span class="number">1</span>]</span><br><span class="line">puts <span class="string">"<span class="subst">#&#123;year&#125;</span>\t<span class="subst">#&#123;temp&#125;</span>"</span> <span class="keyword">if</span> (temp != <span class="string">"+9999"</span> &amp;&amp; q =~ <span class="regexp">/[01459]/</span>)</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure></p>
+<p>在示例2-7代码块中，Ruby从标准全局IO常量类型STDIN中读取输入数据，然后遍历每一行数据，找到行中相关的字段，如果有效，则输出到标准的输出流。</p>
+<p>有必要看一下Streaming与Java MapReduce API之间的区别。  Java API会一条条记录地调用map函数，然后如果使用Streaming形式，map函数可以自己决定怎么样处理输入数据，可以多行一起处理也可以单行处理。JAVA map实现的函数是被推数据，但是它仍然可以考虑通过将多条记录放到一个实例变量中来实现一次处理多行的操作。这种情况下，你需要实现cleanup()方法，以便知道最后一条记录处理完的时候，能够结束处理。</p>
+<p>由于示例2-7基于标准的输入输出操作，可以不通过Hadoop测试，直接通过Unix命令。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">% cat input/ncdc/sample.txt | ch02-mr-intro/src/main/ruby/max_temperature_map.rb</span><br><span class="line">1950 +0000</span><br><span class="line">1950 +0022</span><br><span class="line">1950 -0011</span><br><span class="line">1949 +0111</span><br><span class="line">1949 +0078</span><br></pre></td></tr></table></figure></p>
+<p>reduce函数稍微有点复杂，如示例2-8<br><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env ruby</span></span><br><span class="line">last_key, max_val = <span class="literal">nil</span>, -<span class="number">1000000</span></span><br><span class="line">STDIN.each_line <span class="keyword">do</span> <span class="params">|line|</span></span><br><span class="line">key, val = line.split(<span class="string">"\t"</span>)</span><br><span class="line"> <span class="keyword">if</span> last_key &amp;&amp; last_key != key</span><br><span class="line">   puts <span class="string">"<span class="subst">#&#123;last_key&#125;</span>\t<span class="subst">#&#123;max_val&#125;</span>"</span></span><br><span class="line">   last_key, max_val = key, val.to_i </span><br><span class="line"> <span class="keyword">else</span></span><br><span class="line">   last_key, max_val = key, [max_val, val.to_i].max</span><br><span class="line"> <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line">puts <span class="string">"<span class="subst">#&#123;last_key&#125;</span>\t<span class="subst">#&#123;max_val&#125;</span>"</span> <span class="keyword">if</span> last_key</span><br></pre></td></tr></table></figure></p>
+<p>同map函数一样，reduce函数也会从标准输入中遍历行，但不一样的是，当处理每一个key组的时候，需要存储某个状态。在这个示例中，关键字是年，我们存储最后一次遍历的key,并保存每一个key组中最大的温度。MapReduce框架会确保输入数据会按照关键值排序，所以我们知道如果当前key值不同于上一次遍历的key值时，我们就进入了新的key组。当使用JAVA API时，reduce函数输入的数据就已经按照key值分好了组，而不像Streaming一样需要人为地去判断key组边界。</p>
+<p>对于每一行，我们取得key和value值，然后看看是否到达了一组的最后( last_key &amp;&amp; last_key != key), 如果到达了，我们记录下这组的Key和最高温度，以Tab制表符分隔，然后初始化最高温度，如果没有到达组的最后，则更新当前Key值的最高温度。最后一行作用是确保最后一个Key组的最高温度能够被记录。</p>
+<p>我们现在能够用Unix命令来模拟整个的MapReduce传输通道(等效于图2-1中所示的Unix通道)。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">% cat input/ncdc/sample.txt | \</span><br><span class="line">ch02-mr-intro/src/main/ruby/max_temperature_map.rb | \</span><br><span class="line">sort | ch02-mr-intro/src/main/ruby/max_temperature_reduce.rb</span><br><span class="line">1949 111</span><br><span class="line">1950 22</span><br></pre></td></tr></table></figure></p>
+<p>输出结果与Java程序的一样。下一步使用Hadoop来运行。<br>Hadoop命令不支持流选项，不过，你可以在jar选项中指定Streaming JAR文件，然后指定输入和输出文件路径，以及map和redeuce脚本文件，看起来如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">% hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-*.jar \</span><br><span class="line">-input input/ncdc/sample.txt \</span><br><span class="line">-output output \</span><br><span class="line">-mapper ch02-mr-intro/src/main/ruby/max_temperature_map.rb \</span><br><span class="line">-reducer ch02-mr-intro/src/main/ruby/max_temperature_reduce.rb</span><br></pre></td></tr></table></figure></p>
+<p>当在一个集群中基于大数据执行时，我们需要使用-combiner选项来指定组合函数。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">% hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-*.jar \</span><br><span class="line">-files ch02-mr-intro/src/main/ruby/max_temperature_map.rb,\</span><br><span class="line">ch02-mr-intro/src/main/ruby/max_temperature_reduce.rb \</span><br><span class="line">-input input/ncdc/all \</span><br><span class="line">-output output \</span><br><span class="line">-mapper ch02-mr-intro/src/main/ruby/max_temperature_map.rb \</span><br><span class="line">-combiner ch02-mr-intro/src/main/ruby/max_temperature_reduce.rb \</span><br><span class="line">-reducer ch02-mr-intro/src/main/ruby/max_temperature_reduce.rb</span><br></pre></td></tr></table></figure></p>
+<p>注意我们使用了-files选项，当我们在集群上运行流程序时，需要将map和reduce脚本文件复制到集群中。</p>
+<p>###Python<br>流程序支持任意能够从标准输入读取数据并将数据写入标准输出的语言。所以使用读者更熟悉的Python，再写一遍以上例子。map脚本如示例2-9，reduce脚本如示例2-10.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">示例2-9:map script</span><br><span class="line">#!/usr/bin/env python</span><br><span class="line">import re</span><br><span class="line">import sys</span><br><span class="line">for line in sys.stdin:</span><br><span class="line">val = line.strip()</span><br><span class="line">(year, temp, q) = (val[15:19], val[87:92], val[92:93])</span><br><span class="line">if (temp != &quot;+9999&quot; and re.match(&quot;[01459]&quot;, q)):</span><br><span class="line">print &quot;%s\t%s&quot; % (year, temp)</span><br><span class="line"></span><br><span class="line">示例:2-10 reduce script</span><br><span class="line">import sys</span><br><span class="line">(last_key, max_val) = (None, -sys.maxint)</span><br><span class="line">for line in sys.stdin:</span><br><span class="line">(key, val) = line.strip().split(&quot;\t&quot;)</span><br><span class="line">  if last_key and last_key != key:</span><br><span class="line">     print &quot;%s\t%s&quot; % (last_key, max_val)</span><br><span class="line">     (last_key, max_val) = (key, int(val))</span><br><span class="line">else:</span><br><span class="line">     (last_key, max_val) = (key, max(max_val, int(val)))</span><br><span class="line"> if last_key: </span><br><span class="line"> print &quot;%s\t%s&quot; % (last_key, max_val)</span><br></pre></td></tr></table></figure></p>
+<p>我们能像Ruby中一样以相同的方法来运行这个作业。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">% cat input/ncdc/sample.txt | \</span><br><span class="line">ch02-mr-intro/src/main/python/max_temperature_map.py | \</span><br><span class="line">sort | ch02-mr-intro/src/main/python/max_temperature_reduce.py</span><br><span class="line">1949 111</span><br><span class="line">1950 22</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>本文是笔者翻译自《OReilly.Hadoop.The.Definitive.Guide.4th.Edition》第一部分第2节，后续将继续翻译其它章节。虽尽力翻译，但奈何水平有限，错误再所难免，如果有问题，请不吝指出！希望本文对你有所帮助。</p>
+</blockquote>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Mr.Yang</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://cool-coding.github.io/2017/07/28/第2章-MapReduce/" title="第2章:MapReduce">https://cool-coding.github.io/2017/07/28/第2章-MapReduce/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/mapreduce/" rel="tag"># mapreduce</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/08/08/第3章-Hadoop分布式文件系统-1/" rel="prev" title="第3章:Hadoop分布式文件系统(1)">
+                第3章:Hadoop分布式文件系统(1) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="Mr.Yang" />
+            
+              <p class="site-author-name" itemprop="name">Mr.Yang</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">17</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">8</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/Cool-Coding" target="_blank" title="GitHub" rel="external nofollow"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:riguang_2007@163.com" target="_blank" title="E-Mail" rel="external nofollow"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Mr.Yang</span>
+
+  
+
+  
+</div>
+
+
+  
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" rel="external nofollow" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" rel="external nofollow" href="https://github.com/theme-next/hexo-theme-next">NexT.Gemini</a> v6.3.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.3.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.3.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.3.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.3.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.3.0"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'UeyncgsQOpecpcqYK4Y6SMK3-gzGzoHsz',
+        appKey: 'GnpEAuxOzirt3PyRqF9iQlEv',
+        placeholder: '给点建议呗....',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("UeyncgsQOpecpcqYK4Y6SMK3-gzGzoHsz", "GnpEAuxOzirt3PyRqF9iQlEv");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

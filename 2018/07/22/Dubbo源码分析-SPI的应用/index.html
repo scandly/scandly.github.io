@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.3.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.3.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.3.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.3.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="SPI简介SPI是Service Provider Interface的缩写，即服务提供接口(翻译出来好绕口,还是不翻译的好)，实质上是接口，作用是对外提供服务。SPI是Java的一种插件机制，可以不用修改源代码实现新功能的扩展。主要有如下几个步骤：  实现SPI接口 在项目的META-INF/services文件夹下，新建一个以SPI接口命名的文件， 文件里面配置上SPI接口的实现类 使用jav">
+<meta name="keywords" content="dubbo,SPI">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Dubbo源码分析-SPI的应用">
+<meta property="og:url" content="https://cool-coding.github.io/2018/07/22/Dubbo源码分析-SPI的应用/index.html">
+<meta property="og:site_name" content="半亩方塘">
+<meta property="og:description" content="SPI简介SPI是Service Provider Interface的缩写，即服务提供接口(翻译出来好绕口,还是不翻译的好)，实质上是接口，作用是对外提供服务。SPI是Java的一种插件机制，可以不用修改源代码实现新功能的扩展。主要有如下几个步骤：  实现SPI接口 在项目的META-INF/services文件夹下，新建一个以SPI接口命名的文件， 文件里面配置上SPI接口的实现类 使用jav">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6752673-7095138e71946d70.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6752673-60430629c574b804.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/6752673-108a027703ca2957.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2018-07-23T03:46:18.429Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Dubbo源码分析-SPI的应用">
+<meta name="twitter:description" content="SPI简介SPI是Service Provider Interface的缩写，即服务提供接口(翻译出来好绕口,还是不翻译的好)，实质上是接口，作用是对外提供服务。SPI是Java的一种插件机制，可以不用修改源代码实现新功能的扩展。主要有如下几个步骤：  实现SPI接口 在项目的META-INF/services文件夹下，新建一个以SPI接口命名的文件， 文件里面配置上SPI接口的实现类 使用jav">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/6752673-7095138e71946d70.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+
+
+
+  <link rel="canonical" href="https://cool-coding.github.io/2018/07/22/Dubbo源码分析-SPI的应用/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Dubbo源码分析-SPI的应用 | 半亩方塘</title>
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-119765145-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-119765145-1');
+</script>
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">半亩方塘</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <h1 class="site-subtitle" itemprop="description">Stay foolish,Stay hungry</h1>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://cool-coding.github.io/2018/07/22/Dubbo源码分析-SPI的应用/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Mr.Yang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="半亩方塘">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Dubbo源码分析-SPI的应用
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-07-22 23:11:43" itemprop="dateCreated datePublished" datetime="2018-07-22T23:11:43+08:00">2018-07-22</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/dubbo/" itemprop="url" rel="index"><span itemprop="name">dubbo</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/07/22/Dubbo源码分析-SPI的应用/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2018/07/22/Dubbo源码分析-SPI的应用/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2018/07/22/Dubbo源码分析-SPI的应用/" class="leancloud_visitors" data-flag-title="Dubbo源码分析-SPI的应用">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="SPI简介"><a href="#SPI简介" class="headerlink" title="SPI简介"></a>SPI简介</h2><p>SPI是Service Provider Interface的缩写，即服务提供接口(翻译出来好绕口,还是不翻译的好)，实质上是接口，作用是对外提供服务。<br>SPI是Java的一种插件机制，可以不用修改源代码实现新功能的扩展。<br>主要有如下几个步骤：</p>
+<ol>
+<li>实现SPI接口</li>
+<li>在项目的META-INF/services文件夹下，新建一个以SPI接口命名的文件， 文件里面配置上SPI接口的实现类</li>
+<li>使用java.util.ServiceLoader加载。<br>由于本篇文章主要讲解Dubbo是如何使用SPI的，如果想要具体了解Java的SPI，可以参考下面两篇文章：</li>
+</ol>
+<ul>
+<li><a href="https://www.cnblogs.com/lovesqcc/p/5229353.html" target="_blank" rel="noopener">JavaSPI机制学习笔记</a></li>
+<li><a href="https://docs.oracle.com/javase/tutorial/sound/SPI-intro.html" target="_blank" rel="noopener">Introduction to the Service Provider Interfaces</a><br>当然还可以看 <em>java.util.ServiceLoader</em> 源码，注释中也有详细的说明。</li>
+</ul>
+<a id="more"></a>
+<h2 id="Dubbo-SPI"><a href="#Dubbo-SPI" class="headerlink" title="Dubbo SPI"></a>Dubbo SPI</h2><p>回到正题，SPI在dubbo应用的地方很多，专业一点讲叫做<em>微内核机制</em>;<br>如下图：<br><img src="https://upload-images.jianshu.io/upload_images/6752673-7095138e71946d70.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Plug-In"></p>
+<p>我们拿其中一个标签进行讲解，我们在使用dubbo框架时，会配置&lt;dubbo:protocol /&gt;标签，告诉dubbo服务的主机、端口、可接收的最大连接数、使用哪个协议，协议的传输控制器(netty,servlet,jetty等)、线程池类型大小等信息。dubbo协议默认使用的是netty网络传输框架，当然还可以使用mina、grizzly，只需要配置transporter、server、client为相应的值即可。那dubbo是如何根据不同的配置使用不同的网络传输框架的呢，当然是通过SPI啦。java spi有一个配置文件，那dubbo是否也有呢？在dubbo-rpc包下的dubbo-rpc-dubbo子包下，发现了一个配置文件<br><img src="https://upload-images.jianshu.io/upload_images/6752673-60430629c574b804.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>我们来看下配置文件的内容：</p>
+<blockquote>
+<p>dubbo=org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol</p>
+</blockquote>
+<p>配置了一个键值对，key为dubbo,值为org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol，在其它几个子包下，也有名称叫做org.apache.dubbo.rpc.Protocol的配置文件，说明Protocol插口有几个对应的插件</p>
+<p>可以猜测一下，当&lt;dubbo:protocol /&gt;仅仅配置了name=”dubbo”，port=”20880”时，会加载哪一个协议插件呢，根据名称，可以猜测，加载的DubboProtocol插件。那dubbo是怎样做到的呢，我们来一探究竟。</p>
+<h3 id="Dubbo为使用SPI做的准备工作："><a href="#Dubbo为使用SPI做的准备工作：" class="headerlink" title="Dubbo为使用SPI做的准备工作："></a>Dubbo为使用SPI做的准备工作：</h3><h4 id="三个注解"><a href="#三个注解" class="headerlink" title="三个注解"></a>三个注解</h4><ul>
+<li><strong>SPI</strong>：这个注解使用在接口上，标识接口是否是extension(扩展或插口)，可以接收一个默认的extension名称</li>
+<li><strong>Adaptive</strong>: 这个注解可以使用在类或方法上，决定加载哪一个extension,值为字符串数组，数组中的字符串是key值，比如new String[]{“key1”,”key2”};先在URL中寻找key1的值，如果找到，则使用此值加载extension，如果key1没有，则寻找key2的值，如果key2也没有，则使用接口SPI注解的值，如果接口SPI注解，没有配置默认值，则将接口名按照首字母大写分成多个部分，然后以’.’分隔，例如org.apache.dubbo.xxx.YyyInvokerWrapper接口名会变成yyy.invoker.wrapper，然后以此名称做为key到URL寻找，如果仍没有找到，则抛出IllegalStateException异常；Adaptive注解用在类上，表示此类是它实现接口(插口)的自适应插件</li>
+<li><strong>Activate</strong>：这个注解可以使用在类或方法上，用以根据URL的key值判断当前extension是否生效，当一个extension有多个实现时，可以加载特定的extension实现类，例如extension实现类上有注解@Activate(“cache, validation”)，则当URL上出现”cache”或“validation” key时，当前extension才会生效</li>
+</ul>
+<h4 id="ExtensionLoader"><a href="#ExtensionLoader" class="headerlink" title="ExtensionLoader"></a>ExtensionLoader</h4><p>顾名思义，ExtensionLoader用于加载extension，它的作用有三点：1.自动加载extension;2.自动包装(wrap) extension;3.创建自适应的(adaptive)extension;</p>
+<h3 id="旅途开始"><a href="#旅途开始" class="headerlink" title="旅途开始"></a>旅途开始</h3><p>先看下上篇文章中Provider端的配置文件<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=<span class="string">"1.0"</span> encoding=<span class="string">"UTF-8"</span>?&gt;</span><br><span class="line">&lt;beans xmlns=<span class="string">"http://www.springframework.org/schema/beans"</span></span><br><span class="line">    xmlns:xsi=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span></span><br><span class="line">    xmlns:dubbo=<span class="string">"http://dubbo.apache.org/schema/dubbo"</span></span><br><span class="line">    xsi:schemaLocation=<span class="string">"http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd"</span>&gt;</span><br><span class="line"> </span><br><span class="line">    &lt;!-- 提供方应用信息，用于计算依赖关系 --&gt;</span><br><span class="line">    &lt;dubbo:application name=<span class="string">"hello-world-app"</span>  /&gt;</span><br><span class="line"> </span><br><span class="line">    &lt;!-- 使用multicast广播注册中心暴露服务地址 --&gt;</span><br><span class="line">    &lt;dubbo:registry address=<span class="string">"multicast://224.5.6.7:1234"</span> /&gt;</span><br><span class="line"> </span><br><span class="line">    &lt;!-- 用dubbo协议在<span class="number">20880</span>端口暴露服务 --&gt;</span><br><span class="line">    &lt;dubbo:protocol name=<span class="string">"dubbo"</span> port=<span class="string">"20880"</span> /&gt;</span><br><span class="line"> </span><br><span class="line">    &lt;!-- 声明需要暴露的服务接口 --&gt;</span><br><span class="line">    &lt;dubbo:service <span class="class"><span class="keyword">interface</span></span>=<span class="string">"com.alibaba.dubbo.demo.DemoService"</span> ref=<span class="string">"demoService"</span> /&gt;</span><br><span class="line"> </span><br><span class="line">    &lt;!-- 和本地bean一样实现服务 --&gt;</span><br><span class="line">    &lt;bean id=<span class="string">"demoService"</span> <span class="class"><span class="keyword">class</span></span>=<span class="string">"com.alibaba.dubbo.demo.provider.DemoServiceImpl"</span> /&gt;</span><br><span class="line">&lt;/beans&gt;</span><br></pre></td></tr></table></figure></p>
+<p>还是先从ClassPathXmlApplicationContext加载spring配置文件说起，上回我们说到ClassPathXmlApplicationContext会使用XmlBeanDefinitionReader将xml文件解析成BeanDefiniton集合，当解析&lt;dubbo:protocol /&gt;标签时，会将其解析成<em>org.apache.dubbo.config.ProtocolConfig</em>对象(为什么?请看<a href="https://cool-coding.github.io/2018/07/19/Dubbo%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-Dubbo%E6%98%AF%E5%A6%82%E4%BD%95%E6%95%B4%E5%90%88spring-framework%E7%9A%84/">上回分解</a>最后，protocol key 实例化DubboBeanDefinitionParser时传入的参数),解析&lt;dubbo:service /&gt;时，会将其解析成<em>org.apache.dubbo.config.spring.ServiceBean对象</em>。在解析xml时，会调用AbstractApplicationContext的refresh()方法</p>
+<p>ServiceBean是ServiceConfig的子类，所以在创建ServiceBean对象的时候，会去先实例化父类，ServiceConfig中有一个static final成员变量protocol<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();</span><br></pre></td></tr></table></figure></p>
+<p>ExtensionLoader终于出场了，想要获取插件，得分两步走，第一步得到Protocol的插件加载对象extensionLoader，然后由这个加载对象获得对应的插件。<br>先来看第一步：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">ExtensionLoader&lt;T&gt; <span class="title">getExtensionLoader</span><span class="params">(Class&lt;T&gt; type)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//一些检查的代码,省略</span></span><br><span class="line">    ExtensionLoader&lt;T&gt; loader = (ExtensionLoader&lt;T&gt;) EXTENSION_LOADERS.get(type);</span><br><span class="line">    <span class="keyword">if</span> (loader == <span class="keyword">null</span>) &#123;</span><br><span class="line">        EXTENSION_LOADERS.putIfAbsent(type, <span class="keyword">new</span> ExtensionLoader&lt;T&gt;(type));</span><br><span class="line">        loader = (ExtensionLoader&lt;T&gt;) EXTENSION_LOADERS.get(type);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> loader;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>EXTENSION_LOADERS保存的是目前已经保存的插口的加载类，显然第一次加载的时候，Protocol还没有自己的插件加载类，那么需要实例化一个。实例化加载对象之后，用这个对象去加载插件。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> T <span class="title">getAdaptiveExtension</span><span class="params">()</span> </span>&#123;</span><br><span class="line">   <span class="comment">//从已经缓存的自适应对象中获得，第一次调用时还没有创建自适应类，所以instance为null</span></span><br><span class="line">    Object instance = cachedAdaptiveInstance.get();</span><br><span class="line">    <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (createAdaptiveInstanceError == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (cachedAdaptiveInstance) &#123;</span><br><span class="line">                instance = cachedAdaptiveInstance.get();</span><br><span class="line">                <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        <span class="comment">//创建一个自适应类</span></span><br><span class="line">                        instance = createAdaptiveExtension();</span><br><span class="line">                        cachedAdaptiveInstance.set(instance);</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">                        createAdaptiveInstanceError = t;</span><br><span class="line">                        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"fail to create adaptive instance: "</span> + t.toString(), t);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"fail to create adaptive instance: "</span> + createAdaptiveInstanceError.toString(), createAdaptiveInstanceError);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> (T) instance;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>主要关注 instance = createAdaptiveExtension();这句，createAdaptiveExtension（)方法是什么样的呢?<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> T <span class="title">createAdaptiveExtension</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">       <span class="comment">//得到自适应类并实现化，然后注入属性值</span></span><br><span class="line">        <span class="keyword">return</span> injectExtension((T) getAdaptiveExtensionClass().newInstance());</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"Can not create adaptive extension "</span> + type + <span class="string">", cause: "</span> + e.getMessage(), e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>getAdaptiveExtensionClass()：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> Class&lt;?&gt; getAdaptiveExtensionClass() &#123;</span><br><span class="line">   <span class="comment">//1.获取所有实现Protocol插口的插件类</span></span><br><span class="line">    getExtensionClasses();</span><br><span class="line">   <span class="comment">//2.如果有自适应插件类，则返回</span></span><br><span class="line">    <span class="keyword">if</span> (cachedAdaptiveClass != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> cachedAdaptiveClass;</span><br><span class="line">    &#125;</span><br><span class="line">   <span class="comment">//3.如果没有，则创建插件类</span></span><br><span class="line">    <span class="keyword">return</span> cachedAdaptiveClass = createAdaptiveExtensionClass();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>先来看上面的第1步，getExtensionClasses()<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"> <span class="keyword">private</span> Map&lt;String, Class&lt;?&gt;&gt; getExtensionClasses() &#123;</span><br><span class="line">    <span class="comment">//从缓存中获取插件类，第一次肯定没有</span></span><br><span class="line">     Map&lt;String, Class&lt;?&gt;&gt; classes = cachedClasses.get();</span><br><span class="line">     <span class="keyword">if</span> (classes == <span class="keyword">null</span>) &#123;</span><br><span class="line">         <span class="keyword">synchronized</span> (cachedClasses) &#123;</span><br><span class="line">             classes = cachedClasses.get();</span><br><span class="line">             <span class="keyword">if</span> (classes == <span class="keyword">null</span>) &#123;</span><br><span class="line">                 <span class="comment">//实际的加载插件类方法</span></span><br><span class="line">                 classes = loadExtensionClasses();</span><br><span class="line">                 cachedClasses.set(classes);</span><br><span class="line">             &#125;</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="keyword">return</span> classes;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//ExtensionLoader中的三个常量，加载插件的目录,第一个熟悉吧,是java spi的默认目录</span></span><br><span class="line"> <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String SERVICES_DIRECTORY = <span class="string">"META-INF/services/"</span>;</span><br><span class="line"> <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String DUBBO_DIRECTORY = <span class="string">"META-INF/dubbo/"</span>;</span><br><span class="line"> <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String DUBBO_INTERNAL_DIRECTORY = DUBBO_DIRECTORY + <span class="string">"internal/"</span>;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">private</span> Map&lt;String, Class&lt;?&gt;&gt; loadExtensionClasses() &#123;</span><br><span class="line">     <span class="comment">//获取插口上SPI注解的值，默认值只能有一个，如果多于一个，则抛异常</span></span><br><span class="line">     <span class="keyword">final</span> SPI defaultAnnotation = type.getAnnotation(SPI.class);</span><br><span class="line">     <span class="keyword">if</span> (defaultAnnotation != <span class="keyword">null</span>) &#123;</span><br><span class="line">         String value = defaultAnnotation.value();</span><br><span class="line">         <span class="keyword">if</span> ((value = value.trim()).length() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">             String[] names = NAME_SEPARATOR.split(value);</span><br><span class="line">             <span class="keyword">if</span> (names.length &gt; <span class="number">1</span>) &#123;</span><br><span class="line">                 <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"more than 1 default extension name on extension "</span> + type.getName()</span><br><span class="line">                         + <span class="string">": "</span> + Arrays.toString(names));</span><br><span class="line">             &#125;</span><br><span class="line">             <span class="keyword">if</span> (names.length == <span class="number">1</span>) cachedDefaultName = names[<span class="number">0</span>];</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//加载以上三个目录下的实现了相应插口的插件类(本例中插口是Protocol)</span></span><br><span class="line">     Map&lt;String, Class&lt;?&gt;&gt; extensionClasses = <span class="keyword">new</span> HashMap&lt;String, Class&lt;?&gt;&gt;();</span><br><span class="line">     loadDirectory(extensionClasses, DUBBO_INTERNAL_DIRECTORY, type.getName());</span><br><span class="line">     loadDirectory(extensionClasses, DUBBO_INTERNAL_DIRECTORY, type.getName().replace(<span class="string">"org.apache"</span>, <span class="string">"com.alibaba"</span>));</span><br><span class="line">     loadDirectory(extensionClasses, DUBBO_DIRECTORY, type.getName());</span><br><span class="line">     loadDirectory(extensionClasses, DUBBO_DIRECTORY, type.getName().replace(<span class="string">"org.apache"</span>, <span class="string">"com.alibaba"</span>));</span><br><span class="line">     loadDirectory(extensionClasses, SERVICES_DIRECTORY, type.getName());</span><br><span class="line">     loadDirectory(extensionClasses, SERVICES_DIRECTORY, type.getName().replace(<span class="string">"org.apache"</span>, <span class="string">"com.alibaba"</span>));</span><br><span class="line">     <span class="keyword">return</span> extensionClasses;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure></p>
+<p>实现Protocol插口的共有四个插件:<br><img src="https://upload-images.jianshu.io/upload_images/6752673-108a027703ca2957.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="protocol插件"></p>
+<p>再来看上面getAdaptiveExtensionClass方法的第2步，这一句是判断有没有自适应类，在加载配置的插件过程中，会判断此插件类是不是自适应插件类，判断的依据就是插件类上是否有注解@Adaptive，Protocol的这四个插件类上都没有此注解，所以没有自适应插件，则会走到第3步，创建一个自适应插件类<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> Class&lt;?&gt; createAdaptiveExtensionClass() &#123;</span><br><span class="line">     <span class="comment">//生成类代码</span></span><br><span class="line">     String code = createAdaptiveExtensionClassCode();</span><br><span class="line">     ClassLoader classLoader = findClassLoader();</span><br><span class="line">     <span class="comment">//得到编辑器，并将类代码编译成字节码</span></span><br><span class="line">     org.apache.dubbo.common.compiler.Compiler compiler = ExtensionLoader.getExtensionLoader(org.apache.dubbo.common.compiler.Compiler.class).getAdaptiveExtension();</span><br><span class="line">     <span class="keyword">return</span> compiler.compile(code, classLoader);</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> <span class="comment">//来看看生成类代码的过程,以生成Protocol插件类代码为例</span></span><br><span class="line"> <span class="function"><span class="keyword">private</span> String <span class="title">createAdaptiveExtensionClassCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">     StringBuilder codeBuilder = <span class="keyword">new</span> StringBuilder();</span><br><span class="line">    <span class="comment">//得到Protocol接口所有方法</span></span><br><span class="line">     Method[] methods = type.getMethods();</span><br><span class="line">     <span class="keyword">boolean</span> hasAdaptiveAnnotation = <span class="keyword">false</span>;</span><br><span class="line">     <span class="keyword">for</span> (Method m : methods) &#123;</span><br><span class="line">         <span class="keyword">if</span> (m.isAnnotationPresent(Adaptive.class)) &#123;</span><br><span class="line">             hasAdaptiveAnnotation = <span class="keyword">true</span>;</span><br><span class="line">             <span class="keyword">break</span>;</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="comment">// // 如果方法上没有@Adaptive注解，则不能创建自适应插件类</span></span><br><span class="line">     <span class="keyword">if</span> (!hasAdaptiveAnnotation)</span><br><span class="line">         <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"No adaptive method on extension "</span> + type.getName() + <span class="string">", refuse to create the adaptive class!"</span>);</span><br><span class="line"></span><br><span class="line">     codeBuilder.append(<span class="string">"package "</span>).append(type.getPackage().getName()).append(<span class="string">";"</span>);</span><br><span class="line">     codeBuilder.append(<span class="string">"\nimport "</span>).append(ExtensionLoader.class.getName()).append(<span class="string">";"</span>);</span><br><span class="line">    <span class="comment">//类名为Protocol$Adaptive实现了Protocol接口</span></span><br><span class="line">     codeBuilder.append(<span class="string">"\npublic class "</span>).append(type.getSimpleName()).append(<span class="string">"$Adaptive"</span>).append(<span class="string">" implements "</span>).append(type.getCanonicalName()).append(<span class="string">" &#123;"</span>);</span><br><span class="line"></span><br><span class="line">     <span class="keyword">for</span> (Method method : methods) &#123;</span><br><span class="line">         Class&lt;?&gt; rt = method.getReturnType();</span><br><span class="line">         Class&lt;?&gt;[] pts = method.getParameterTypes();</span><br><span class="line">         Class&lt;?&gt;[] ets = method.getExceptionTypes();</span><br><span class="line"></span><br><span class="line">         Adaptive adaptiveAnnotation = method.getAnnotation(Adaptive.class);</span><br><span class="line">         StringBuilder code = <span class="keyword">new</span> StringBuilder(<span class="number">512</span>);</span><br><span class="line">         <span class="keyword">if</span> (adaptiveAnnotation == <span class="keyword">null</span>) &#123;</span><br><span class="line">             code.append(<span class="string">"throw new UnsupportedOperationException(\"method "</span>)</span><br><span class="line">                     .append(method.toString()).append(<span class="string">" of interface "</span>)</span><br><span class="line">                     .append(type.getName()).append(<span class="string">" is not adaptive method!\");"</span>);</span><br><span class="line">         &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">             <span class="keyword">int</span> urlTypeIndex = -<span class="number">1</span>;</span><br><span class="line">             <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; pts.length; ++i) &#123;</span><br><span class="line">                 <span class="keyword">if</span> (pts[i].equals(URL.class)) &#123;</span><br><span class="line">                     urlTypeIndex = i;</span><br><span class="line">                     <span class="keyword">break</span>;</span><br><span class="line">                 &#125;</span><br><span class="line">             &#125;</span><br><span class="line">             <span class="comment">// 如果发现方法中的参数有一个URL类型</span></span><br><span class="line">             <span class="keyword">if</span> (urlTypeIndex != -<span class="number">1</span>) &#123;</span><br><span class="line">                 <span class="comment">// Null Point check</span></span><br><span class="line">                 String s = String.format(<span class="string">"\nif (arg%d == null) throw new IllegalArgumentException(\"url == null\");"</span>,</span><br><span class="line">                         urlTypeIndex);</span><br><span class="line">                 code.append(s);</span><br><span class="line"></span><br><span class="line">                 s = String.format(<span class="string">"\n%s url = arg%d;"</span>, URL.class.getName(), urlTypeIndex);</span><br><span class="line">                 code.append(s);</span><br><span class="line">             &#125;</span><br><span class="line">             <span class="comment">//  如果没有发现，则会寻找每一个参数类型中的属性是否有为URL类型的</span></span><br><span class="line">             <span class="keyword">else</span> &#123;</span><br><span class="line">                 String attribMethod = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">                 <span class="comment">// find URL getter method</span></span><br><span class="line">                 LBL_PTS:</span><br><span class="line">                 <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; pts.length; ++i) &#123;</span><br><span class="line">                     Method[] ms = pts[i].getMethods();</span><br><span class="line">                     <span class="keyword">for</span> (Method m : ms) &#123;</span><br><span class="line">                         String name = m.getName();</span><br><span class="line">                         <span class="keyword">if</span> ((name.startsWith(<span class="string">"get"</span>) || name.length() &gt; <span class="number">3</span>)</span><br><span class="line">                                 &amp;&amp; Modifier.isPublic(m.getModifiers())</span><br><span class="line">                                 &amp;&amp; !Modifier.isStatic(m.getModifiers())</span><br><span class="line">                                 &amp;&amp; m.getParameterTypes().length == <span class="number">0</span></span><br><span class="line">                                 &amp;&amp; m.getReturnType() == URL.class) &#123;</span><br><span class="line">                             urlTypeIndex = i;</span><br><span class="line">                             attribMethod = name;</span><br><span class="line">                             <span class="keyword">break</span> LBL_PTS;</span><br><span class="line">                         &#125;</span><br><span class="line">                     &#125;</span><br><span class="line">                 &#125;</span><br><span class="line">                <span class="comment">//如果没找到，则抛出异常</span></span><br><span class="line">                 <span class="keyword">if</span> (attribMethod == <span class="keyword">null</span>) &#123;</span><br><span class="line">                     <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"fail to create adaptive class for interface "</span> + type.getName()</span><br><span class="line">                             + <span class="string">": not found url parameter or url attribute in parameters of method "</span> + method.getName());</span><br><span class="line">                 &#125;</span><br><span class="line"></span><br><span class="line">                 <span class="comment">// Null point check</span></span><br><span class="line">                 String s = String.format(<span class="string">"\nif (arg%d == null) throw new IllegalArgumentException(\"%s argument == null\");"</span>,</span><br><span class="line">                         urlTypeIndex, pts[urlTypeIndex].getName());</span><br><span class="line">                 code.append(s);</span><br><span class="line">                 s = String.format(<span class="string">"\nif (arg%d.%s() == null) throw new IllegalArgumentException(\"%s argument %s() == null\");"</span>,</span><br><span class="line">                         urlTypeIndex, attribMethod, pts[urlTypeIndex].getName(), attribMethod);</span><br><span class="line">                 code.append(s);</span><br><span class="line"></span><br><span class="line">                 s = String.format(<span class="string">"%s url = arg%d.%s();"</span>, URL.class.getName(), urlTypeIndex, attribMethod);</span><br><span class="line">                 code.append(s);</span><br><span class="line">             &#125;</span><br><span class="line"></span><br><span class="line">             String[] value = adaptiveAnnotation.value();</span><br><span class="line">             <span class="comment">// value is not set, use the value generated from class name as the key</span></span><br><span class="line">             <span class="keyword">if</span> (value.length == <span class="number">0</span>) &#123;</span><br><span class="line">                 <span class="keyword">char</span>[] charArray = type.getSimpleName().toCharArray();</span><br><span class="line">                 StringBuilder sb = <span class="keyword">new</span> StringBuilder(<span class="number">128</span>);</span><br><span class="line">                 <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; charArray.length; i++) &#123;</span><br><span class="line">                     <span class="keyword">if</span> (Character.isUpperCase(charArray[i])) &#123;</span><br><span class="line">                         <span class="keyword">if</span> (i != <span class="number">0</span>) &#123;</span><br><span class="line">                             sb.append(<span class="string">"."</span>);</span><br><span class="line">                         &#125;</span><br><span class="line">                         sb.append(Character.toLowerCase(charArray[i]));</span><br><span class="line">                     &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                         sb.append(charArray[i]);</span><br><span class="line">                     &#125;</span><br><span class="line">                 &#125;</span><br><span class="line">                 value = <span class="keyword">new</span> String[]&#123;sb.toString()&#125;;</span><br><span class="line">             &#125;</span><br><span class="line"></span><br><span class="line">             <span class="keyword">boolean</span> hasInvocation = <span class="keyword">false</span>;</span><br><span class="line">             <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; pts.length; ++i) &#123;</span><br><span class="line">                 <span class="keyword">if</span> (pts[i].getName().equals(<span class="string">"org.apache.dubbo.rpc.Invocation"</span>)) &#123;</span><br><span class="line">                     <span class="comment">// Null Point check</span></span><br><span class="line">                     String s = String.format(<span class="string">"\nif (arg%d == null) throw new IllegalArgumentException(\"invocation == null\");"</span>, i);</span><br><span class="line">                     code.append(s);</span><br><span class="line">                     s = String.format(<span class="string">"\nString methodName = arg%d.getMethodName();"</span>, i);</span><br><span class="line">                     code.append(s);</span><br><span class="line">                     hasInvocation = <span class="keyword">true</span>;</span><br><span class="line">                     <span class="keyword">break</span>;</span><br><span class="line">                 &#125;</span><br><span class="line">             &#125;</span><br><span class="line">             String defaultExtName = cachedDefaultName;</span><br><span class="line">             String getNameCode = <span class="keyword">null</span>;</span><br><span class="line">             <span class="keyword">for</span> (<span class="keyword">int</span> i = value.length - <span class="number">1</span>; i &gt;= <span class="number">0</span>; --i) &#123;</span><br><span class="line">                 <span class="keyword">if</span> (i == value.length - <span class="number">1</span>) &#123;</span><br><span class="line">                     <span class="keyword">if</span> (<span class="keyword">null</span> != defaultExtName) &#123;</span><br><span class="line">                         <span class="keyword">if</span> (!<span class="string">"protocol"</span>.equals(value[i]))</span><br><span class="line">                             <span class="keyword">if</span> (hasInvocation)</span><br><span class="line">                                 getNameCode = String.format(<span class="string">"url.getMethodParameter(methodName, \"%s\", \"%s\")"</span>, value[i], defaultExtName);</span><br><span class="line">                             <span class="keyword">else</span></span><br><span class="line">                                 getNameCode = String.format(<span class="string">"url.getParameter(\"%s\", \"%s\")"</span>, value[i], defaultExtName);</span><br><span class="line">                         <span class="keyword">else</span></span><br><span class="line">                             getNameCode = String.format(<span class="string">"( url.getProtocol() == null ? \"%s\" : url.getProtocol() )"</span>, defaultExtName);</span><br><span class="line">                     &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                         <span class="keyword">if</span> (!<span class="string">"protocol"</span>.equals(value[i]))</span><br><span class="line">                             <span class="keyword">if</span> (hasInvocation)</span><br><span class="line">                                 getNameCode = String.format(<span class="string">"url.getMethodParameter(methodName, \"%s\", \"%s\")"</span>, value[i], defaultExtName);</span><br><span class="line">                             <span class="keyword">else</span></span><br><span class="line">                                 getNameCode = String.format(<span class="string">"url.getParameter(\"%s\")"</span>, value[i]);</span><br><span class="line">                         <span class="keyword">else</span></span><br><span class="line">                             getNameCode = <span class="string">"url.getProtocol()"</span>;</span><br><span class="line">                     &#125;</span><br><span class="line">                 &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                     <span class="keyword">if</span> (!<span class="string">"protocol"</span>.equals(value[i]))</span><br><span class="line">                        <span class="comment">//如果方法参数类型名称为"org.apache.dubbo.rpc.Invocation"则从url获取以此参数类型名为key的值，获取不到则取默认扩展名，即Protocol接口上注解SPI的值“dubbo”</span></span><br><span class="line">                         <span class="keyword">if</span> (hasInvocation)</span><br><span class="line">                             getNameCode = String.format(<span class="string">"url.getMethodParameter(methodName, \"%s\", \"%s\")"</span>, value[i], defaultExtName);</span><br><span class="line">                         <span class="keyword">else</span></span><br><span class="line">                            <span class="comment">//否则，取从url中取以方法上注解adaptive的值为key对应的值</span></span><br><span class="line">                             getNameCode = String.format(<span class="string">"url.getParameter(\"%s\", %s)"</span>, value[i], getNameCode);</span><br><span class="line">                     <span class="keyword">else</span></span><br><span class="line">                         getNameCode = String.format(<span class="string">"url.getProtocol() == null ? (%s) : url.getProtocol()"</span>, getNameCode);</span><br><span class="line">                 &#125;</span><br><span class="line">             &#125;</span><br><span class="line">             code.append(<span class="string">"\nString extName = "</span>).append(getNameCode).append(<span class="string">";"</span>);</span><br><span class="line">             <span class="comment">// check extName == null?</span></span><br><span class="line">             String s = String.format(<span class="string">"\nif(extName == null) "</span> +</span><br><span class="line">                             <span class="string">"throw new IllegalStateException(\"Fail to get extension(%s) name from url(\" + url.toString() + \") use keys(%s)\");"</span>,</span><br><span class="line">                     type.getName(), Arrays.toString(value));</span><br><span class="line">             code.append(s);</span><br><span class="line"></span><br><span class="line">             s = String.format(<span class="string">"\n%s extension = (%&lt;s)%s.getExtensionLoader(%s.class).getExtension(extName);"</span>,</span><br><span class="line">                     type.getName(), ExtensionLoader.class.getSimpleName(), type.getName());</span><br><span class="line">             code.append(s);</span><br><span class="line"></span><br><span class="line">             <span class="comment">// return statement</span></span><br><span class="line">             <span class="keyword">if</span> (!rt.equals(<span class="keyword">void</span>.class)) &#123;</span><br><span class="line">                 code.append(<span class="string">"\nreturn "</span>);</span><br><span class="line">             &#125;</span><br><span class="line"></span><br><span class="line">             s = String.format(<span class="string">"extension.%s("</span>, method.getName());</span><br><span class="line">             code.append(s);</span><br><span class="line">             <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; pts.length; i++) &#123;</span><br><span class="line">                 <span class="keyword">if</span> (i != <span class="number">0</span>)</span><br><span class="line">                     code.append(<span class="string">", "</span>);</span><br><span class="line">                 code.append(<span class="string">"arg"</span>).append(i);</span><br><span class="line">             &#125;</span><br><span class="line">             code.append(<span class="string">");"</span>);</span><br><span class="line">         &#125;</span><br><span class="line"></span><br><span class="line">         codeBuilder.append(<span class="string">"\npublic "</span>).append(rt.getCanonicalName()).append(<span class="string">" "</span>).append(method.getName()).append(<span class="string">"("</span>);</span><br><span class="line">         <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; pts.length; i++) &#123;</span><br><span class="line">             <span class="keyword">if</span> (i &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                 codeBuilder.append(<span class="string">", "</span>);</span><br><span class="line">             &#125;</span><br><span class="line">             codeBuilder.append(pts[i].getCanonicalName());</span><br><span class="line">             codeBuilder.append(<span class="string">" "</span>);</span><br><span class="line">             codeBuilder.append(<span class="string">"arg"</span>).append(i);</span><br><span class="line">         &#125;</span><br><span class="line">         codeBuilder.append(<span class="string">")"</span>);</span><br><span class="line">         <span class="keyword">if</span> (ets.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">             codeBuilder.append(<span class="string">" throws "</span>);</span><br><span class="line">             <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; ets.length; i++) &#123;</span><br><span class="line">                 <span class="keyword">if</span> (i &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                     codeBuilder.append(<span class="string">", "</span>);</span><br><span class="line">                 &#125;</span><br><span class="line">                 codeBuilder.append(ets[i].getCanonicalName());</span><br><span class="line">             &#125;</span><br><span class="line">         &#125;</span><br><span class="line">         codeBuilder.append(<span class="string">" &#123;"</span>);</span><br><span class="line">         codeBuilder.append(code.toString());</span><br><span class="line">         codeBuilder.append(<span class="string">"\n&#125;"</span>);</span><br><span class="line">     &#125;</span><br><span class="line">     codeBuilder.append(<span class="string">"\n&#125;"</span>);</span><br><span class="line">     <span class="keyword">if</span> (logger.isDebugEnabled()) &#123;</span><br><span class="line">         logger.debug(codeBuilder.toString());</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="keyword">return</span> codeBuilder.toString();</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure></p>
+<p>我们来看下生成的插件类Protocol$Adaptive代码:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> org.apache.dubbo.rpc;</span><br><span class="line"><span class="keyword">import</span> org.apache.dubbo.common.extension.ExtensionLoader;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Protocol</span>$<span class="title">Adaptive</span> <span class="keyword">implements</span> <span class="title">org</span>.<span class="title">apache</span>.<span class="title">dubbo</span>.<span class="title">rpc</span>.<span class="title">Protocol</span> </span>&#123;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">destroy</span><span class="params">()</span> </span></span><br><span class="line"><span class="function"></span>&#123;<span class="keyword">throw</span> <span class="keyword">new</span> UnsupportedOperationException(<span class="string">"method public abstract void org.apache.dubbo.rpc.Protocol.destroy() of interface org.apache.dubbo.rpc.Protocol is not adaptive method!"</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getDefaultPort</span><span class="params">()</span> </span>&#123;</span><br><span class="line"><span class="keyword">throw</span> <span class="keyword">new</span> UnsupportedOperationException(<span class="string">"method public abstract int org.apache.dubbo.rpc.Protocol.getDefaultPort() of interface org.apache.dubbo.rpc.Protocol is not adaptive method!"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> org.apache.dubbo.rpc.<span class="function">Invoker <span class="title">refer</span><span class="params">(java.lang.Class arg0, org.apache.dubbo.common.URL arg1)</span> <span class="keyword">throws</span> org.apache.dubbo.rpc.RpcException </span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (arg1 == <span class="keyword">null</span>) <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"url == null"</span>);</span><br><span class="line">	org.apache.dubbo.common.URL url = arg1;</span><br><span class="line">	String extName = ( url.getProtocol() == <span class="keyword">null</span> ? <span class="string">"dubbo"</span> : url.getProtocol() );</span><br><span class="line">	<span class="keyword">if</span>(extName == <span class="keyword">null</span>) <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"Fail to get extension(org.apache.dubbo.rpc.Protocol) name from url("</span> + url.toString() + <span class="string">") use keys([protocol])"</span>);</span><br><span class="line">	org.apache.dubbo.rpc.Protocol extension = (org.apache.dubbo.rpc.Protocol)ExtensionLoader.getExtensionLoader(org.apache.dubbo.rpc.Protocol.class).getExtension(extName);</span><br><span class="line">	<span class="keyword">return</span> extension.refer(arg0, arg1);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> org.apache.dubbo.rpc.<span class="function">Exporter <span class="title">export</span><span class="params">(org.apache.dubbo.rpc.Invoker arg0)</span> <span class="keyword">throws</span> org.apache.dubbo.rpc.RpcException </span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (arg0 == <span class="keyword">null</span>) <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"org.apache.dubbo.rpc.Invoker argument == null"</span>);</span><br><span class="line">	<span class="keyword">if</span> (arg0.getUrl() == <span class="keyword">null</span>) <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"org.apache.dubbo.rpc.Invoker argument getUrl() == null"</span>);org.apache.dubbo.common.URL url = arg0.getUrl();</span><br><span class="line">	String extName = ( url.getProtocol() == <span class="keyword">null</span> ? <span class="string">"dubbo"</span> : url.getProtocol() );</span><br><span class="line">	<span class="keyword">if</span>(extName == <span class="keyword">null</span>) <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"Fail to get extension(org.apache.dubbo.rpc.Protocol) name from url("</span> + url.toString() + <span class="string">") use keys([protocol])"</span>);</span><br><span class="line">	org.apache.dubbo.rpc.Protocol extension = (org.apache.dubbo.rpc.Protocol)ExtensionLoader.getExtensionLoader(org.apache.dubbo.rpc.Protocol.class).getExtension(extName);</span><br><span class="line">    <span class="keyword">return</span> extension.export(arg0);</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>可以看出此类可以根据url中参数protocol值加载对应的插件，如果url中没有，则加载名为”dubbo”对应的插件，而从前面加载的四个插件可以看出，名称为dubbo的插件类为<em>org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol</em>.</p>
+<p>写到这里总算将SPI加载的过程大体上讲述了一篇，Dubbo中还有许多类似的插件，原理基本相同；除了有的插口有自适应插件，比如<em>org.apache.dubbo.common.compiler.Compiler</em>和<em>org.apache.dubbo.common.extension.ExtensionFactory</em>,自适应插件类上都有注解@Adaptive，比如Compile的自适应插件AdaptiveCompiler,ExtensionFactory的自适应插件AdaptiveExtensionFactory.</p>
+<blockquote>
+<p>为什么要提供自适应插件，而不是都在运行时生成？</p>
+</blockquote>
+<blockquote>
+<p>答:<br>(1)解决鸡生蛋，蛋生鸡的问题，上面createAdaptiveExtensionClass方法中，在第1步生成Protocol$Adaptive类后，会使用编译器将其编译成字节码，但是编译器本身也是插件化的，可以有好几种编译器，所以需要提供一个已经存在的自适应编译器(AdaptiveCompiler)，然后在编译的时候，使用此编译器找到Compile接口上SPI注解中配置的默认的编译器进行编译。<br>  (2)解决对象生成方式不同导致的加载问题；Dubbo中对象的生成一类是由Spring容器创建，一类是根据插件文件的配置动态加载；所以要想获取这两部分对象，需要使用不同的方式；而AdaptiveExtensionFactory就是为了解决这个问题，在获取对象时，分别从Spring容器和ExtensionLoader中查找。</p>
+</blockquote>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Mr.Yang</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://cool-coding.github.io/2018/07/22/Dubbo源码分析-SPI的应用/" title="Dubbo源码分析-SPI的应用">https://cool-coding.github.io/2018/07/22/Dubbo源码分析-SPI的应用/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/dubbo/" rel="tag"># dubbo</a>
+          
+            <a href="/tags/SPI/" rel="tag"># SPI</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/19/Dubbo源码分析-Dubbo是如何整合spring-framework的/" rel="next" title="Dubbo源码分析-Dubbo是如何整合spring-framework的">
+                <i class="fa fa-chevron-left"></i> Dubbo源码分析-Dubbo是如何整合spring-framework的
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/08/07/远程桌面项目开发-Spring-Netty-Swing/" rel="prev" title="远程桌面项目开发(Spring+Netty+Swing)">
+                远程桌面项目开发(Spring+Netty+Swing) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="Mr.Yang" />
+            
+              <p class="site-author-name" itemprop="name">Mr.Yang</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">17</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">8</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/Cool-Coding" target="_blank" title="GitHub" rel="external nofollow"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:riguang_2007@163.com" target="_blank" title="E-Mail" rel="external nofollow"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#SPI简介"><span class="nav-text">SPI简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dubbo-SPI"><span class="nav-text">Dubbo SPI</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Dubbo为使用SPI做的准备工作："><span class="nav-text">Dubbo为使用SPI做的准备工作：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#三个注解"><span class="nav-text">三个注解</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ExtensionLoader"><span class="nav-text">ExtensionLoader</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#旅途开始"><span class="nav-text">旅途开始</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Mr.Yang</span>
+
+  
+
+  
+</div>
+
+
+  
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" rel="external nofollow" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" rel="external nofollow" href="https://github.com/theme-next/hexo-theme-next">NexT.Gemini</a> v6.3.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.3.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.3.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.3.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.3.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.3.0"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'UeyncgsQOpecpcqYK4Y6SMK3-gzGzoHsz',
+        appKey: 'GnpEAuxOzirt3PyRqF9iQlEv',
+        placeholder: '给点建议呗....',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("UeyncgsQOpecpcqYK4Y6SMK3-gzGzoHsz", "GnpEAuxOzirt3PyRqF9iQlEv");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

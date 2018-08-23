@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.3.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.3.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.3.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.3.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="大家都知道，Apache Hadoop的配置很繁琐，而且很零散，为此Cloudera公司提供了Clouder Manager工具，而且还封装了Apache Hadoop,flume,spark，hive,hbase等大数据产品形成自己特色的CDH产品，再使用CM进行安装，很大程度上方便了集群的搭建，并提供了集群的监控功能。 一、环境: 三台VMware虚拟机(一个做为主节点，两个做为从节点)">
+<meta name="keywords" content="cdh">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cloudera Manager及CDH最新版本安装记录">
+<meta property="og:url" content="http://yoursite.com/2018/05/24/Cloudera-Manager及CDH最新版本安装记录/index.html">
+<meta property="og:site_name" content="半亩方塘">
+<meta property="og:description" content="大家都知道，Apache Hadoop的配置很繁琐，而且很零散，为此Cloudera公司提供了Clouder Manager工具，而且还封装了Apache Hadoop,flume,spark，hive,hbase等大数据产品形成自己特色的CDH产品，再使用CM进行安装，很大程度上方便了集群的搭建，并提供了集群的监控功能。 一、环境: 三台VMware虚拟机(一个做为主节点，两个做为从节点)">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://tj-cabbage-yun-ftn.weiyun.com/ftn_handler/6fb5c053a5876e22490783112fc34f81e48a20bff7883ad91bf3a6329d13c43cff0a3bbfe9fae4ab3d4eb321a5dc54d3e1848a2950f1027a82d0cfa06edf679b/a.png?fname=a.png&from=30113&version=2.0.0.2&uin=542600078">
+<meta property="og:image" content="https://images2018.cnblogs.com/blog/1352870/201803/1352870-20180320162543853-1159403644.png">
+<meta property="og:image" content="https://images2018.cnblogs.com/blog/1352870/201803/1352870-20180320162623872-1160095590.png">
+<meta property="og:image" content="https://images2018.cnblogs.com/blog/1352870/201803/1352870-20180320162301845-122143825.png">
+<meta property="og:image" content="https://images2018.cnblogs.com/blog/1352870/201803/1352870-20180320162917730-1819042495.png">
+<meta property="og:image" content="https://images2018.cnblogs.com/blog/1352870/201803/1352870-20180320163041484-1573709474.png">
+<meta property="og:updated_time" content="2018-05-24T08:08:56.078Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Cloudera Manager及CDH最新版本安装记录">
+<meta name="twitter:description" content="大家都知道，Apache Hadoop的配置很繁琐，而且很零散，为此Cloudera公司提供了Clouder Manager工具，而且还封装了Apache Hadoop,flume,spark，hive,hbase等大数据产品形成自己特色的CDH产品，再使用CM进行安装，很大程度上方便了集群的搭建，并提供了集群的监控功能。 一、环境: 三台VMware虚拟机(一个做为主节点，两个做为从节点)">
+<meta name="twitter:image" content="https://tj-cabbage-yun-ftn.weiyun.com/ftn_handler/6fb5c053a5876e22490783112fc34f81e48a20bff7883ad91bf3a6329d13c43cff0a3bbfe9fae4ab3d4eb321a5dc54d3e1848a2950f1027a82d0cfa06edf679b/a.png?fname=a.png&from=30113&version=2.0.0.2&uin=542600078">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/05/24/Cloudera-Manager及CDH最新版本安装记录/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Cloudera Manager及CDH最新版本安装记录 | 半亩方塘</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">半亩方塘</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/24/Cloudera-Manager及CDH最新版本安装记录/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Mr.Yang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="半亩方塘">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Cloudera Manager及CDH最新版本安装记录
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-05-24 15:28:38" itemprop="dateCreated datePublished" datetime="2018-05-24T15:28:38+08:00">2018-05-24</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Cloudera-Manager/" itemprop="url" rel="index"><span itemprop="name">Cloudera Manager</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Cloudera-Manager/CDH/" itemprop="url" rel="index"><span itemprop="name">CDH</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>大家都知道，Apache Hadoop的配置很繁琐，而且很零散，为此Cloudera公司提供了Clouder Manager工具，而且还封装了Apache Hadoop,flume,spark，hive,hbase等大数据产品形成自己特色的CDH产品，再使用CM进行安装，很大程度上方便了集群的搭建，并提供了集群的监控功能。</p>
+<h2 id="一、环境"><a href="#一、环境" class="headerlink" title="一、环境:"></a>一、环境:</h2><ol>
+<li>三台VMware虚拟机(一个做为主节点，两个做为从节点)</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">hserver1n(主节点)</th>
+<th style="text-align:center">hserver2n(从节点)</th>
+<th style="text-align:center">hserver3n(从节点)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">CM Server</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">CM Agent</td>
+<td style="text-align:center">CM Agent</td>
+<td style="text-align:center">CM Agent</td>
+</tr>
+<tr>
+<td style="text-align:center">NameNode</td>
+<td style="text-align:center">DateNode</td>
+<td style="text-align:center">DateNode</td>
+</tr>
+<tr>
+<td style="text-align:center">Mysql</td>
+<td style="text-align:center"></td>
+</tr>
+</tbody>
+</table>
+<a id="more"></a>
+<ol start="2">
+<li>操作系统:Centos7</li>
+<li>Cloudera Manager:5.14.1</li>
+<li>CDH：5.14.0</li>
+<li>JDK1.8</li>
+</ol>
+<h2 id="二、软件下载地址"><a href="#二、软件下载地址" class="headerlink" title="二、软件下载地址"></a>二、软件下载地址</h2><ol>
+<li><a href="https://archive.cloudera.com/cm5/cm/5/cloudera-manager-centos7-cm5.14.1_x86_64.tar.gz" target="_blank" rel="noopener">Cloudera Manager</a></li>
+<li><a href="http://archive.cloudera.com/cdh5/parcels/5.14/" target="_blank" rel="noopener">CDH</a></li>
+<li>JDK和MySQL请自行搜索安装</li>
+</ol>
+<h2 id="三、系统环境设置"><a href="#三、系统环境设置" class="headerlink" title="三、系统环境设置"></a>三、系统环境设置</h2><p>以下步骤都使用root用户操作</p>
+<ol>
+<li>设置静态IP<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]# vim /etc/sysconfig/network-scripts/ifcfg-ens33</span><br><span class="line">TYPE=&quot;Ethernet&quot;</span><br><span class="line">BOOTPROTO=&quot;static&quot;</span><br><span class="line">DEFROUTE=&quot;yes&quot;</span><br><span class="line">PEERDNS=&quot;yes&quot;</span><br><span class="line">PEERROUTES=&quot;yes&quot;</span><br><span class="line">IPV4_FAILURE_FATAL=&quot;no&quot;</span><br><span class="line">IPV6INIT=&quot;yes&quot;</span><br><span class="line">IPV6_AUTOCONF=&quot;yes&quot;</span><br><span class="line">IPV6_DEFROUTE=&quot;yes&quot;</span><br><span class="line">IPV6_PEERDNS=&quot;yes&quot;</span><br><span class="line">IPV6_PEERROUTES=&quot;yes&quot;</span><br><span class="line">IPV6_FAILURE_FATAL=&quot;no&quot;</span><br><span class="line">IPV6_ADDR_GEN_MODE=&quot;stable-privacy&quot;</span><br><span class="line">NAME=&quot;ens33&quot;</span><br><span class="line">UUID=&quot;edcb54db-f59d-4893-bd8e-8ae60d0ba6f9&quot;</span><br><span class="line">DEVICE=&quot;ens33&quot;</span><br><span class="line">ONBOOT=&quot;yes&quot;</span><br><span class="line">**GATEWAY=192.168.124.2</span><br><span class="line">IPADDR=192.168.124.136</span><br><span class="line">NETMASK=255.255.255.0</span><br><span class="line">DNS1=202.96.128.86</span><br><span class="line">DNS2=223.5.5.5**</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>还需要设置虚拟网络:<br>1.1 点击虚拟网络编辑器<br><img src="https://tj-cabbage-yun-ftn.weiyun.com/ftn_handler/6fb5c053a5876e22490783112fc34f81e48a20bff7883ad91bf3a6329d13c43cff0a3bbfe9fae4ab3d4eb321a5dc54d3e1848a2950f1027a82d0cfa06edf679b/a.png?fname=a.png&amp;from=30113&amp;version=2.0.0.2&amp;uin=542600078" alt=""></p>
+<p>1.2 子网，子网掩码，以及NAT设置<br><img src="https://images2018.cnblogs.com/blog/1352870/201803/1352870-20180320162543853-1159403644.png" alt=""><br><img src="https://images2018.cnblogs.com/blog/1352870/201803/1352870-20180320162623872-1160095590.png" alt=""></p>
+<p>1.3 虚拟机网络选择刚设置的VMnet8<br><img src="https://images2018.cnblogs.com/blog/1352870/201803/1352870-20180320162301845-122143825.png" alt=""></p>
+<p>1.4 重启网络</p>
+<blockquote>
+<p>[root@localhost ~]# systemctl restart network</p>
+</blockquote>
+<p><img src="https://images2018.cnblogs.com/blog/1352870/201803/1352870-20180320162917730-1819042495.png" alt=""></p>
+<ol start="2">
+<li>关闭防火墙和SELINUX<br><img src="https://images2018.cnblogs.com/blog/1352870/201803/1352870-20180320163041484-1573709474.png" alt=""><blockquote>
+<p>[root@localhost ~]# vim /etc/selinux/config .config/<br>将selinux=enforcing改成selinux=disabled</p>
+</blockquote>
+</li>
+</ol>
+<p>重启虚拟机</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/cdh/" rel="tag"># cdh</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/04/02/MongoDB3-6之Replica-Set初步体验/" rel="next" title="MongoDB3.6之Replica Set初步体验">
+                <i class="fa fa-chevron-left"></i> MongoDB3.6之Replica Set初步体验
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="Mr.Yang" />
+            
+              <p class="site-author-name" itemprop="name">Mr.Yang</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">14</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/Cool-Coding" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:riguang_2007@163.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一、环境"><span class="nav-number">1.</span> <span class="nav-text">一、环境:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二、软件下载地址"><span class="nav-number">2.</span> <span class="nav-text">二、软件下载地址</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三、系统环境设置"><span class="nav-number">3.</span> <span class="nav-text">三、系统环境设置</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Mr.Yang</span>
+
+  
+
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Gemini</a> v6.3.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.3.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.3.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.3.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.3.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.3.0"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

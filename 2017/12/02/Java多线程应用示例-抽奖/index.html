@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.3.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.3.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.3.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.3.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="这里用java多线程实现一个简单的抽奖程序，从100个座位号中，随机抽取10位。我设计的思路是用10个线程，每个线程从100个座位号中随机抽取1位，然后显示在黑板上，然后再去抽取，再显示。这里涉及到从100 个座位号中随机抽取时要线程之间要同步，否则会出现同一个号被多个线程抽取。一个线程大致分为如下几个步骤：a.从待抽取的座位列表中随机抽取座位。b.将抽取的座位号显示在黑板对应的位置上，并取得那个">
+<meta name="keywords" content="thread">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java多线程应用示例-抽奖">
+<meta property="og:url" content="https://cool-coding.github.io/2017/12/02/Java多线程应用示例-抽奖/index.html">
+<meta property="og:site_name" content="半亩方塘">
+<meta property="og:description" content="这里用java多线程实现一个简单的抽奖程序，从100个座位号中，随机抽取10位。我设计的思路是用10个线程，每个线程从100个座位号中随机抽取1位，然后显示在黑板上，然后再去抽取，再显示。这里涉及到从100 个座位号中随机抽取时要线程之间要同步，否则会出现同一个号被多个线程抽取。一个线程大致分为如下几个步骤：a.从待抽取的座位列表中随机抽取座位。b.将抽取的座位号显示在黑板对应的位置上，并取得那个">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-05-23T14:39:16.737Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java多线程应用示例-抽奖">
+<meta name="twitter:description" content="这里用java多线程实现一个简单的抽奖程序，从100个座位号中，随机抽取10位。我设计的思路是用10个线程，每个线程从100个座位号中随机抽取1位，然后显示在黑板上，然后再去抽取，再显示。这里涉及到从100 个座位号中随机抽取时要线程之间要同步，否则会出现同一个号被多个线程抽取。一个线程大致分为如下几个步骤：a.从待抽取的座位列表中随机抽取座位。b.将抽取的座位号显示在黑板对应的位置上，并取得那个">
+
+
+
+
+
+
+  <link rel="canonical" href="https://cool-coding.github.io/2017/12/02/Java多线程应用示例-抽奖/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Java多线程应用示例-抽奖 | 半亩方塘</title>
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-119765145-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-119765145-1');
+</script>
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">半亩方塘</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <h1 class="site-subtitle" itemprop="description">Stay foolish,Stay hungry</h1>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://cool-coding.github.io/2017/12/02/Java多线程应用示例-抽奖/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Mr.Yang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="半亩方塘">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Java多线程应用示例-抽奖
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-12-02 22:38:21" itemprop="dateCreated datePublished" datetime="2017-12-02T22:38:21+08:00">2017-12-02</time>
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/12/02/Java多线程应用示例-抽奖/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count valine-comment-count" data-xid="/2017/12/02/Java多线程应用示例-抽奖/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/2017/12/02/Java多线程应用示例-抽奖/" class="leancloud_visitors" data-flag-title="Java多线程应用示例-抽奖">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>这里用java多线程实现一个简单的抽奖程序，从100个座位号中，随机抽取10位。<br>我设计的思路是用10个线程，每个线程从100个座位号中随机抽取1位，然后显示在黑板上，然后再去抽取，再显示。这里涉及到从100 个座位号中随机抽取时要线程之间要同步，否则会出现同一个号被多个线程抽取。一个线程大致分为如下几个步骤：<br>a.从待抽取的座位列表中随机抽取座位。<br>b.将抽取的座位号显示在黑板对应的位置上，并取得那个位置上当前显示的座位号。<br>c.将b步得到的座位号添加到待抽取列表中。</p>
+<p>经过a,b,c三步，一个线程一次的动作算完成了，将这三步操作视为一个原子操作，进行线程间同步，剩下的就是循环抽取座位号就行了。</p>
+<p>有几点需求注意：<br>1.b步可以不同步，但发现，当随机抽取的数量多时，此时一个线程（假设代号为1）还没有来得及更新黑板上对应位置的座位号，另一个线程（假设代号为2）已经将1线程放入座位组中的号又取出来，并显示在黑板上了。这样就会造成黑板上同一个座位号显示了多次。<br>2.需要区分哪些座位号是抽取过的，哪些座位号是没有抽取过的，这样每次抽取只抽取没有抽取过的。会自然而然的用两个List表示。但仔细想想，不需要用两个List区分，因为黑板上显示的座位号就是已经抽取的，只需要每次从座位池中删除，然后显示在黑板上，再次抽取时，将黑板上原来显示的座位号放回座位池中即可。<br>3.是否可以用LinkedList代替ArrayList。大家都知道LinkedList的删除，插入性能优于ArrayList,并且这里线程也需要反复不断的对座位池进行删除，新增操作。但这里的新增只是在最后面加入，影响不大，有影响的就是删除操作。但是这样还会有不断的随机取号操作。到底是删除操作影响大，还是取号操作影响大呢？经过验证发现，当座位池中座位号比较大时(假如为10万)，LinkedList速度会明显慢于ArrayList,几乎有10倍之差。<br><a id="more"></a><br><strong>源码如下</strong>:<br>抽取号码部分:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> cn.yanggy.demo03;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"><span class="keyword">import</span> java.util.Random;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Cool-Coding 2017/12/1</span></span><br><span class="line"><span class="comment"> * 此类是随机样本抽取工具类，从N个样本源中随机抽取M个样本</span></span><br><span class="line"><span class="comment"> *由于N个样本不断的从队列取出，再放到队列尾部，N个样本抽中的概率相等</span></span><br><span class="line"><span class="comment"> * 使用方法：</span></span><br><span class="line"><span class="comment"> * RandomFetch randomFetch=new RandomFetch(source,sampleCount,SampleShow);</span></span><br><span class="line"><span class="comment"> * randomFetch.start()</span></span><br><span class="line"><span class="comment"> * randomFetch.stop()</span></span><br><span class="line"><span class="comment"> * randomFetch.pause()</span></span><br><span class="line"><span class="comment"> * randomFetch.resume()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">RandomFetch</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="comment">//源数据池</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;T&gt; source;</span><br><span class="line">    <span class="comment">//样本数</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> smaple;</span><br><span class="line">    <span class="comment">//结果回调接口</span></span><br><span class="line">    <span class="keyword">private</span> SampleShow&lt;T&gt; sampleShow;</span><br><span class="line">    <span class="comment">//线程列表</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> List&lt;Picker&gt; threadList = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    <span class="comment">//停止标识，使用volatile，是因为多线程共享同一变量时，需要变量改变时，线程能够即时发现</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">boolean</span> stop = <span class="keyword">false</span>;</span><br><span class="line">    <span class="comment">//暂停标识</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">boolean</span> suspend = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//暂停锁</span></span><br><span class="line">    <span class="keyword">private</span> Object suspendLock=<span class="keyword">new</span> Object();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">RandomFetch</span><span class="params">(List&lt;T&gt; source,<span class="keyword">int</span> sample,SampleShow&lt;T&gt; sampleShow)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.source=source;<span class="comment">//源数据池</span></span><br><span class="line">        <span class="keyword">this</span>.smaple=sample;<span class="comment">//样本数</span></span><br><span class="line">        <span class="keyword">this</span>.sampleShow=sampleShow;<span class="comment">//结果回调接口</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">     <span class="comment">//开始抽奖</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; smaple; i++) &#123;</span><br><span class="line">            Picker runnable = <span class="keyword">new</span> Picker();</span><br><span class="line">            threadList.add(runnable);</span><br><span class="line">            Thread thread = <span class="keyword">new</span> Thread(runnable, i + <span class="string">""</span>);</span><br><span class="line">            thread.start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//停止抽奖</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">stop</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            stop = <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//恢复</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">resume</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        suspend = <span class="keyword">false</span>;</span><br><span class="line">        <span class="comment">//threadList.forEach(pick -&gt;&#123;synchronized(pick)&#123;pick.notify();&#125;&#125;);</span></span><br><span class="line">        <span class="keyword">synchronized</span> (suspendLock)&#123;</span><br><span class="line">            suspendLock.notifyAll();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//暂停</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">pause</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        suspend = <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">//抽奖线程</span></span><br><span class="line">    <span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">Picker</span> <span class="keyword">implements</span> <span class="title">Runnable</span>  </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> T <span class="title">pickSeatNumber</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="comment">//有待取的座位时才去取，否则跳过</span></span><br><span class="line">            <span class="keyword">int</span> count = source.size();</span><br><span class="line">            <span class="keyword">if</span> (count &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="comment">//随机取一个序号[0,count)</span></span><br><span class="line">                <span class="keyword">int</span> index = <span class="keyword">new</span> Random().nextInt(count);</span><br><span class="line">                <span class="comment">//得到座位号</span></span><br><span class="line">                T seatNumber = source.get(index);</span><br><span class="line">                <span class="comment">//将座位从待取座位中移除</span></span><br><span class="line">                source.remove(index);</span><br><span class="line">                <span class="keyword">return</span> seatNumber;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> T <span class="title">showSeatNumber</span><span class="params">(T seatNumber)</span> <span class="keyword">throws</span> RandomFetchException </span>&#123;</span><br><span class="line">            <span class="comment">//看当前线程更新的是黑板上哪个位置的座位号[0,sample)</span></span><br><span class="line">            <span class="keyword">int</span> index = Integer.valueOf(Thread.currentThread().getName());</span><br><span class="line">            <span class="keyword">if</span>(index &gt;=<span class="number">0</span> &amp;&amp; index &lt; smaple) &#123;</span><br><span class="line">                T oldSample=sampleShow.show(index,seatNumber);</span><br><span class="line">                <span class="comment">//如果黑板对应位置之前没有座位号时，则返回Null</span></span><br><span class="line">                <span class="keyword">if</span> (oldSample == <span class="keyword">null</span> || oldSample.equals(<span class="string">""</span>)) oldSample = <span class="keyword">null</span>;</span><br><span class="line">                <span class="keyword">return</span> oldSample;</span><br><span class="line">            &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> RandomFetchException(<span class="string">"thread name is not right,it should be between 0 and "</span>+smaple);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">readyAgain</span><span class="params">(T oldSeatNumber)</span> </span>&#123;</span><br><span class="line">            <span class="comment">//添加到待取座位列表中</span></span><br><span class="line">            source.add(oldSeatNumber);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">while</span> (!stop) &#123;</span><br><span class="line">                <span class="keyword">if</span> (suspend) &#123;</span><br><span class="line">                    <span class="comment">//object.wait,object.notify必须是锁对象</span></span><br><span class="line">                    <span class="comment">//此处不用RandomFetch.this，原因是其它线程获得了RandomFetch.this锁时，当前</span></span><br><span class="line">                    <span class="comment">//线程仍可以暂停</span></span><br><span class="line">                    <span class="keyword">synchronized</span> (suspendLock) &#123;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            suspendLock.wait();</span><br><span class="line">                        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                            e.printStackTrace();</span><br><span class="line">                        &#125;</span><br><span class="line"></span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">synchronized</span> (RandomFetch.<span class="keyword">this</span>)  &#123;</span><br><span class="line">                    T seatNumnber = pickSeatNumber();</span><br><span class="line">                    T oldSeatNumber = <span class="keyword">null</span>;</span><br><span class="line">                    <span class="keyword">if</span> (seatNumnber != <span class="keyword">null</span>) &#123;</span><br><span class="line">                        <span class="keyword">try</span> &#123;</span><br><span class="line">                            oldSeatNumber = showSeatNumber(seatNumnber);</span><br><span class="line">                        &#125;<span class="keyword">catch</span> (RandomFetchException e)&#123;</span><br><span class="line">                            e.printStackTrace();</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">if</span> (oldSeatNumber != <span class="keyword">null</span>) &#123;</span><br><span class="line">                        readyAgain(oldSeatNumber);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">package</span> cn.yanggy.demo03;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Cool-Coding 2017/12/1</span></span><br><span class="line"><span class="comment"> * 异常类</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RandomFetchException</span> <span class="keyword">extends</span> <span class="title">Exception</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">RandomFetchException</span><span class="params">()</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">RandomFetchException</span><span class="params">(String message)</span></span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(message);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">package</span> cn.yanggy.demo03;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Cool-Coding 2017/12/1</span></span><br><span class="line"><span class="comment"> * 随机抽奖返回结果接口</span></span><br><span class="line"><span class="comment"> * 此接口用于调用者与随机抽奖线程之间进行数据交换</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">SampleShow</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> T <span class="title">show</span><span class="params">(<span class="keyword">int</span> index, T data)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>屏幕部分:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> cn.yanggy.demo03;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javax.swing.*;</span><br><span class="line"><span class="keyword">import</span> java.awt.*;</span><br><span class="line"><span class="keyword">import</span> java.awt.event.ActionEvent;</span><br><span class="line"><span class="keyword">import</span> java.awt.event.ActionListener;</span><br><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> Cool-Coding 2017/12/1</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BlackBoard</span> <span class="keyword">extends</span> <span class="title">JFrame</span> <span class="keyword">implements</span>  <span class="title">ActionListener</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> LUCKYCOUNT =<span class="number">10</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String START =<span class="string">"开始"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String STOP =<span class="string">"停止"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String PAUSE =<span class="string">"暂停"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String RESUME =<span class="string">"恢复"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> JPanel panel=<span class="keyword">new</span> JPanel(<span class="keyword">new</span> GridLayout(<span class="number">5</span>, <span class="number">2</span>));</span><br><span class="line">    <span class="keyword">private</span> JButton jButton;</span><br><span class="line">    <span class="keyword">private</span> JButton jButton2;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> RandomFetch randomFetch;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">BlackBoard</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="comment">// 窗口属性的设置</span></span><br><span class="line">        setTitle(<span class="string">"抽奖"</span>);<span class="comment">// 窗口标题</span></span><br><span class="line">        setSize(<span class="number">300</span>, <span class="number">200</span>);<span class="comment">// 窗口大小</span></span><br><span class="line">        setLocationRelativeTo(<span class="keyword">null</span>);<span class="comment">// 窗口居中</span></span><br><span class="line">        setDefaultCloseOperation(EXIT_ON_CLOSE);<span class="comment">// 关闭窗口则退出虚拟机</span></span><br><span class="line">        setLayout(<span class="keyword">new</span> GridLayout(<span class="number">2</span>, <span class="number">1</span>));<span class="comment">// 设置布局流式布局</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i&lt; LUCKYCOUNT; i++)&#123;</span><br><span class="line">            <span class="keyword">final</span> JLabel label=<span class="keyword">new</span> JLabel();</span><br><span class="line">            label.setName(i+<span class="string">""</span>);</span><br><span class="line">            label.setFont(<span class="keyword">new</span> Font(<span class="string">"宋休"</span>,Font.PLAIN,<span class="number">20</span>));</span><br><span class="line">            panel.add(label);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        JPanel panel2=<span class="keyword">new</span> JPanel();</span><br><span class="line">        jButton=<span class="keyword">new</span> JButton(START);</span><br><span class="line">        jButton.setSize(<span class="number">100</span>,<span class="number">100</span>);</span><br><span class="line">        jButton.addActionListener(<span class="keyword">this</span>);</span><br><span class="line">        panel2.add(jButton);</span><br><span class="line"></span><br><span class="line">        jButton2=<span class="keyword">new</span> JButton(PAUSE);</span><br><span class="line">        jButton2.setEnabled(<span class="keyword">false</span>);</span><br><span class="line">        jButton2.setSize(<span class="number">100</span>,<span class="number">100</span>);</span><br><span class="line">        jButton2.addActionListener(<span class="keyword">this</span>);</span><br><span class="line">        panel2.add(jButton2);</span><br><span class="line">        add(panel);</span><br><span class="line">        add(panel2);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//抽取样本</span></span><br><span class="line">        ArrayList&lt;String&gt; source=<span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">100</span>;i++)&#123;</span><br><span class="line">            source.add(<span class="string">"seat"</span>+i);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        randomFetch = <span class="keyword">new</span> RandomFetch&lt;String&gt;(source, LUCKYCOUNT, <span class="keyword">new</span> SampleShow&lt;String&gt;() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> String <span class="title">show</span><span class="params">(<span class="keyword">int</span> index, String data)</span> </span>&#123;</span><br><span class="line">                JLabel label=BlackBoard.<span class="keyword">this</span>.getLabel(index);</span><br><span class="line">                String oldSeatNumber = label.getText();</span><br><span class="line">                label.setText(data);</span><br><span class="line">                <span class="keyword">return</span>  oldSeatNumber;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//获取Lable</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> JLabel <span class="title">getLabel</span><span class="params">(<span class="keyword">int</span> index)</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (JLabel)panel.getComponent(index);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">actionPerformed</span><span class="params">(ActionEvent e)</span> </span>&#123;</span><br><span class="line">    String action=e.getActionCommand();</span><br><span class="line">    <span class="keyword">if</span>(action.equals(START)) &#123;</span><br><span class="line">      randomFetch.start();</span><br><span class="line">      jButton.setText(STOP);</span><br><span class="line"></span><br><span class="line">      <span class="comment">//可以暂停了</span></span><br><span class="line">      jButton2.setText(PAUSE);</span><br><span class="line">      jButton2.setEnabled(<span class="keyword">true</span>);</span><br><span class="line"></span><br><span class="line">    &#125;<span class="keyword">else</span> <span class="keyword">if</span>(action.equals(STOP))&#123;</span><br><span class="line">        randomFetch.stop();</span><br><span class="line">        <span class="comment">//jButton.setText(START);</span></span><br><span class="line">        jButton.setEnabled(<span class="keyword">false</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//将按钮变成灰色</span></span><br><span class="line">        <span class="comment">//jButton2.setText(PAUSE);</span></span><br><span class="line">        jButton2.setEnabled(<span class="keyword">false</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//检查是否有两个Lable 内容相同</span></span><br><span class="line">        ArrayList&lt;String&gt; list=<span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="keyword">for</span>(Component comp:panel.getComponents())&#123;</span><br><span class="line">            JLabel label=(JLabel)comp;</span><br><span class="line">            String text=label.getText();</span><br><span class="line">            <span class="keyword">boolean</span> yesorno=list.contains(text);</span><br><span class="line">            <span class="keyword">if</span>(!yesorno)&#123;</span><br><span class="line">                list.add(text);</span><br><span class="line">            &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                System.out.println(<span class="string">"wrong:"</span>+text);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (list.size()==LUCKYCOUNT) System.out.println(<span class="string">"success"</span>);</span><br><span class="line">    &#125;<span class="keyword">else</span> <span class="keyword">if</span>(action.equals(PAUSE))&#123;</span><br><span class="line">        randomFetch.pause();</span><br><span class="line">        jButton2.setText(RESUME);</span><br><span class="line">    &#125;<span class="keyword">else</span> <span class="keyword">if</span>(action.equals(RESUME))&#123;</span><br><span class="line">        randomFetch.resume();</span><br><span class="line">        jButton2.setText(PAUSE);</span><br><span class="line">    &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String args[])</span></span>&#123;</span><br><span class="line">        BlackBoard blackBoard=<span class="keyword">new</span> BlackBoard();</span><br><span class="line">        blackBoard.setVisible(<span class="keyword">true</span>);</span><br><span class="line">        <span class="comment">//showComponents(blackBoard.getPanel());</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>本文的目的是线程的运用，所以屏幕部分写的比较简陋。其中要注意的是线程的暂停和恢复，需要同步的对象是线程本身，即synchronized (this){wait();}，否则会报异常：java.lang.IllegalMonitorStateException</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Mr.Yang</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://cool-coding.github.io/2017/12/02/Java多线程应用示例-抽奖/" title="Java多线程应用示例-抽奖">https://cool-coding.github.io/2017/12/02/Java多线程应用示例-抽奖/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/thread/" rel="tag"># thread</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/11/27/Hive中自定义Map-Reduce示例-In-Python/" rel="next" title="Hive中自定义Map/Reduce示例 In Python">
+                <i class="fa fa-chevron-left"></i> Hive中自定义Map/Reduce示例 In Python
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/01/18/Lock应用示例-生产者与消费者/" rel="prev" title="Lock应用示例-生产者与消费者">
+                Lock应用示例-生产者与消费者 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="Mr.Yang" />
+            
+              <p class="site-author-name" itemprop="name">Mr.Yang</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">17</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">8</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/Cool-Coding" target="_blank" title="GitHub" rel="external nofollow"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:riguang_2007@163.com" target="_blank" title="E-Mail" rel="external nofollow"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Mr.Yang</span>
+
+  
+
+  
+</div>
+
+
+  
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" rel="external nofollow" href="https://hexo.io">Hexo</a> 强力驱动 v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" rel="external nofollow" href="https://github.com/theme-next/hexo-theme-next">NexT.Gemini</a> v6.3.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.3.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.3.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.3.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.3.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.3.0"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  
+  
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(function (item) {
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'UeyncgsQOpecpcqYK4Y6SMK3-gzGzoHsz',
+        appKey: 'GnpEAuxOzirt3PyRqF9iQlEv',
+        placeholder: '给点建议呗....',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("UeyncgsQOpecpcqYK4Y6SMK3-gzGzoHsz", "GnpEAuxOzirt3PyRqF9iQlEv");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            
+            counter.save(null, {
+              success: function(counter) {
+                
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            
+              var newcounter = new Counter();
+              /* Set ACL */
+              var acl = new AV.ACL();
+              acl.setPublicReadAccess(true);
+              acl.setPublicWriteAccess(true);
+              newcounter.setACL(acl);
+              /* End Set ACL */
+              newcounter.set("title", title);
+              newcounter.set("url", url);
+              newcounter.set("time", 1);
+              newcounter.save(null, {
+                success: function(newcounter) {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                },
+                error: function(newcounter, error) {
+                  console.log('Failed to create');
+                }
+              });
+            
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
